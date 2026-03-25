@@ -4,46 +4,37 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <meta name="apple-mobile-web-app-capable" content="yes">
-    <title>📻 加密对讲机</title>
+    <title>📻 对讲机</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
             background: linear-gradient(135deg, #0f0c29, #302b63, #24243e);
-            min-height: 100vh;
-            display: flex;
-            flex-direction: column;
-            color: #fff;
+            min-height: 100vh; display: flex; flex-direction: column; color: #fff;
         }
-        header {
-            padding: 16px 20px;
-            text-align: center;
-            background: rgba(0,0,0,0.4);
-            border-bottom: 1px solid rgba(255,255,255,0.1);
-        }
-        header h1 { font-size: 1.4rem; display: flex; align-items: center; justify-content: center; gap: 8px; }
-        .secure-badge { font-size: 0.7rem; background: linear-gradient(90deg, #4ade80, #22c55e); color: #000; padding: 2px 8px; border-radius: 10px; font-weight: 700; }
+        header { padding: 16px 20px; text-align: center; background: rgba(0,0,0,0.4); border-bottom: 1px solid rgba(255,255,255,0.1); }
+        header h1 { font-size: 1.4rem; }
+        .secure-badge { font-size: 0.7rem; background: linear-gradient(90deg, #4ade80, #22c55e); color: #000; padding: 2px 8px; border-radius: 10px; font-weight: 700; margin-left: 8px; }
         .status-bar { margin-top: 6px; font-size: 0.82rem; color: #888; }
         .status-bar.online { color: #4ade80; }
         .status-bar.speaking { color: #f87171; animation: blink 0.6s infinite; }
         .status-bar.receiving { color: #60a5fa; animation: blink 0.6s infinite; }
         @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.4} }
 
-        .join-section { padding: 16px 20px; background: rgba(0,0,0,0.2); border-bottom: 1px solid rgba(255,255,255,0.08); }
+        .join-section { padding: 20px; background: rgba(0,0,0,0.2); border-bottom: 1px solid rgba(255,255,255,0.08); }
         .join-section.hidden { display: none; }
-        .input-row { display: flex; gap: 10px; max-width: 420px; margin: 0 auto; }
-        .input-row input { flex: 1; padding: 13px 16px; border: 2px solid rgba(255,255,255,0.15); border-radius: 12px; background: rgba(255,255,255,0.08); color: #fff; font-size: 1rem; outline: none; transition: border-color 0.3s; }
-        .input-row input:focus { border-color: #00d4ff; }
-        .input-row input::placeholder { color: #555; }
-        .btn { padding: 13px 22px; border: none; border-radius: 12px; font-size: 0.95rem; font-weight: 600; cursor: pointer; transition: all 0.2s; }
-        .btn-join { background: linear-gradient(90deg, #00d4ff, #7c3aed); color: #fff; }
-        .btn-leave { background: rgba(255,100,100,0.2); color: #f87171; border: 1px solid rgba(255,100,100,0.3); font-size: 0.85rem; padding: 8px 16px; border-radius: 8px; cursor: pointer; }
+        .join-input { display: flex; gap: 10px; max-width: 400px; margin: 0 auto; }
+        .join-input input { flex: 1; padding: 14px 16px; border: 2px solid rgba(255,255,255,0.15); border-radius: 12px; background: rgba(255,255,255,0.08); color: #fff; font-size: 1rem; outline: none; transition: border-color 0.3s; }
+        .join-input input:focus { border-color: #00d4ff; }
+        .join-input input::placeholder { color: #555; }
+        .join-input button { padding: 14px 24px; background: linear-gradient(90deg, #00d4ff, #7c3aed); color: #fff; border: none; border-radius: 12px; font-size: 1rem; font-weight: 600; cursor: pointer; }
 
-        .channel-info { display: none; padding: 10px 20px; background: rgba(0,212,255,0.08); border-bottom: 1px solid rgba(0,212,255,0.15); align-items: center; justify-content: space-between; }
-        .channel-info.show { display: flex; }
-        .channel-name { font-size: 0.9rem; color: #00d4ff; }
-        .online-count { font-size: 0.82rem; color: #888; }
-        .online-count span { color: #4ade80; font-weight: 600; }
+        .conn-info { padding: 12px 20px; background: rgba(0,212,255,0.08); border-bottom: 1px solid rgba(0,212,255,0.15); display: none; align-items: center; justify-content: space-between; }
+        .conn-info.show { display: flex; }
+        .conn-info .ch { color: #00d4ff; font-size: 0.9rem; }
+        .conn-info .online { font-size: 0.82rem; color: #888; }
+        .conn-info .online span { color: #4ade80; font-weight: 600; }
+        .conn-info .leave { background: rgba(255,100,100,0.2); color: #f87171; padding: 8px 16px; border-radius: 8px; border: 1px solid rgba(255,100,100,0.3); cursor: pointer; font-size: 0.85rem; }
 
         .talk-section { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 30px 20px; }
         .talk-btn {
@@ -60,17 +51,14 @@
         .talk-btn.active { background: radial-gradient(circle at 35% 35%, #cc2222, #880000); box-shadow: 0 0 60px rgba(255,50,50,0.5); transform: scale(0.96); }
         .talk-btn.active .label { color: #ffaaaa; }
         .talk-hint { margin-top: 24px; font-size: 0.82rem; color: #444; text-align: center; line-height: 1.8; }
-        .encrypt-indicator { display: flex; align-items: center; gap: 6px; margin-top: 16px; font-size: 0.78rem; color: #4ade80; }
-        .encrypt-dot { width: 8px; height: 8px; border-radius: 50%; background: #4ade80; animation: pg 2s infinite; }
-        @keyframes pg { 0%,100%{opacity:1} 50%{opacity:0.4} }
 
         .log-section { background: rgba(0,0,0,0.5); border-top: 1px solid rgba(255,255,255,0.08); padding: 12px 16px; max-height: 130px; overflow-y: auto; }
+        .log-section::-webkit-scrollbar { width: 3px; }
+        .log-section::-webkit-scrollbar-thumb { background: #333; border-radius: 2px; }
         .log-entry { font-size: 0.75rem; padding: 3px 0; color: #555; }
-        .log-entry.join { color: #60a5fa; }
-        .log-entry.leave { color: #f87171; }
-        .log-entry.speak { color: #4ade80; }
-        .log-entry.error { color: #f87171; }
-        .log-entry.secure { color: #a78bfa; }
+        .log-entry.ok { color: #4ade80; }
+        .log-entry.err { color: #f87171; }
+        .log-entry.info { color: #60a5fa; }
 
         .toast { position: fixed; top: 70px; left: 50%; transform: translateX(-50%); background: rgba(10,10,20,0.95); color: #fff; padding: 11px 22px; border-radius: 12px; font-size: 0.88rem; z-index: 1000; border: 1px solid rgba(255,255,255,0.1); white-space: nowrap; animation: ti 0.3s ease; }
         @keyframes ti { from{opacity:0;transform:translateX(-50%) translateY(-15px)} to{opacity:1;transform:translateX(-50%) translateY(0)} }
@@ -78,22 +66,22 @@
 </head>
 <body>
 <header>
-    <h1>📻 对讲机 <span class="secure-badge">🔒 加密</span></h1>
+    <h1>📻 对讲机<span class="secure-badge">🔒 加密</span></h1>
     <div class="status-bar" id="status">就绪</div>
 </header>
 
 <div class="join-section" id="joinSection">
-    <div class="input-row">
-        <input type="text" id="channelInput" placeholder="输入频道号（如: family2026）" maxlength="30" autocomplete="off">
-        <button class="btn btn-join" onclick="joinChannel()">加入</button>
+    <div class="join-input">
+        <input type="text" id="chInput" placeholder="输入频道号（如: family2026）" maxlength="20" autocomplete="off">
+        <button onclick="joinChannel()">加入</button>
     </div>
 </div>
 
-<div class="channel-info" id="channelInfo">
-    <div class="channel-name" id="channelName">📻 -</div>
+<div class="conn-info" id="connInfo">
+    <div class="ch" id="chName">📻 -</div>
     <div style="display:flex;align-items:center;gap:12px">
-        <div class="online-count">在线 <span id="userCount">1</span> 人</div>
-        <button class="btn-leave" onclick="leaveChannel()">离开</button>
+        <div class="online">在线 <span id="onlineCount">1</span> 人</div>
+        <div class="leave" onclick="leaveChannel()">离开</div>
     </div>
 </div>
 
@@ -102,25 +90,26 @@
         <span class="icon">🎙️</span>
         <span class="label">按住说话</span>
     </button>
-    <div class="talk-hint" id="talkHint">请先加入频道</div>
-    <div class="encrypt-indicator" id="encryptIndicator" style="display:none">
-        <div class="encrypt-dot"></div> 端对端加密已启用
-    </div>
+    <div class="talk-hint" id="hint">请先加入频道</div>
 </div>
 
 <div class="log-section" id="logSection">
     <div class="log-entry">系统就绪</div>
 </div>
 
-<script src="https://js.pusher.com/8.2.0/pusher.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
-    const PUSHER_KEY = '8e6caec8bd3839137a9b';
-    const PUSHER_CLUSTER = 'ap3';
+    // ===== Supabase 配置 =====
+    const SUPABASE_URL = 'https://hogtlfhzaptjmdofirpc.supabase.co';
+    const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhvZ3RsZmh6YXB0am1kb2ZpcnBjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQ0Mzk0MDgsImV4cCI6MjA5MDAxNTQwOH0.uWntVROe6VLzr6Uoqz57HoQ48NgmqJFy-UgE0sZ1ezI';
 
-    let pusher = null, ch = null;
+    const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+    // ===== 状态 =====
     let myId = 'u_' + Math.random().toString(36).substr(2, 8);
     let currentChannel = '';
-    let peers = new Map();
+    let sbChannel = null;
+    let peers = new Map(); // peerId -> RTCPeerConnection
     let localStream = null;
     let isTalking = false;
     let onlineUsers = new Set();
@@ -131,7 +120,8 @@
     function addLog(msg, type='') {
         const el = document.createElement('div');
         el.className = 'log-entry ' + type;
-        el.textContent = '[' + new Date().toLocaleTimeString('zh-CN',{hour:'2-digit',minute:'2-digit',second:'2-digit'}) + '] ' + msg;
+        const t = new Date().toLocaleTimeString('zh-CN', {hour:'2-digit',minute:'2-digit',second:'2-digit'});
+        el.textContent = `[${t}] ${msg}`;
         document.getElementById('logSection').insertBefore(el, document.getElementById('logSection').firstChild);
     }
 
@@ -144,31 +134,36 @@
     }
 
     function updateCount() {
-        document.getElementById('userCount').textContent = onlineUsers.size + 1;
+        document.getElementById('onlineCount').textContent = onlineUsers.size + 1;
     }
 
     // ===== WebRTC =====
     const RTC_CONFIG = {
         iceServers: [
             { urls: 'stun:stun.l.google.com:19302' },
-            { urls: 'stun:stun1.l.google.com:19302' }
+            { urls: 'stun:stun1.l.google.com:19302' },
+            { urls: 'stun:stun.cloudflare.com:3478' }
         ]
     };
 
     function createPC(peerId) {
         if (peers.has(peerId)) return peers.get(peerId);
+
         const pc = new RTCPeerConnection(RTC_CONFIG);
         peers.set(peerId, pc);
 
+        // 添加本地音频
         if (localStream) {
             localStream.getTracks().forEach(t => pc.addTrack(t, localStream));
         }
 
+        // 收到对方音频
         pc.ontrack = (e) => {
-            addLog('🔊 收到对方音频', 'join');
+            addLog('🔊 收到对方音频', 'ok');
             const audio = new Audio();
             audio.srcObject = e.streams[0];
-            audio.play().catch(err => addLog('播放失败:' + err.message, 'error'));
+            audio.play().catch(err => addLog('播放失败: ' + err.message, 'err'));
+            talkBtn.classList.add('receiving');
             statusEl.textContent = '🔵 对方正在说话...';
             statusEl.className = 'status-bar receiving';
             e.streams[0].getTracks()[0].onended = () => {
@@ -179,160 +174,207 @@
             };
         };
 
+        // ICE 候选 - 通过 Supabase 发送
         pc.onicecandidate = (e) => {
             if (e.candidate) {
-                ch.trigger('client-signal', { to: peerId, from: myId, type: 'candidate', candidate: e.candidate });
+                sendSignal(peerId, { type: 'candidate', candidate: e.candidate });
             }
         };
 
         pc.onconnectionstatechange = () => {
-            addLog('连接状态: ' + pc.connectionState, pc.connectionState === 'connected' ? 'join' : '');
+            addLog('连接状态: ' + pc.connectionState, pc.connectionState === 'connected' ? 'ok' : '');
             if (pc.connectionState === 'connected') {
                 showToast('✅ 连接成功！可以说话了');
+                statusEl.textContent = '📻 ' + currentChannel + ' · 空闲';
+                statusEl.className = 'status-bar online';
+                talkBtn.disabled = false;
+                document.getElementById('hint').textContent = '按住大按钮说话，松开停止\nPC端可按空格键';
             }
             if (pc.connectionState === 'failed' || pc.connectionState === 'disconnected') {
                 peers.delete(peerId);
                 onlineUsers.delete(peerId);
                 updateCount();
+                addLog('连接断开: ' + peerId.substr(0,8), 'err');
             }
         };
 
         return pc;
     }
 
+    // ===== 通过 Supabase 发送信令 =====
+    function sendSignal(to, signal) {
+        if (sbChannel) {
+            sbChannel.send({
+                type: 'broadcast',
+                event: 'signal',
+                payload: { from: myId, to: to, signal: signal }
+            });
+        }
+    }
+
+    function broadcastSignal(event, payload) {
+        if (sbChannel) {
+            sbChannel.send({
+                type: 'broadcast',
+                event: event,
+                payload: { from: myId, ...payload }
+            });
+        }
+    }
+
+    // ===== 处理 WebRTC 信令 =====
+    async function handleSignal(from, signal) {
+        if (signal.type === 'offer') {
+            addLog('收到连接请求', 'info');
+            const pc = createPC(from);
+            await pc.setRemoteDescription(new RTCSessionDescription(signal.sdp));
+            const answer = await pc.createAnswer();
+            await pc.setLocalDescription(answer);
+            sendSignal(from, { type: 'answer', sdp: answer });
+
+        } else if (signal.type === 'answer') {
+            const pc = peers.get(from);
+            if (pc) {
+                await pc.setRemoteDescription(new RTCSessionDescription(signal.sdp));
+                addLog('连接应答成功', 'ok');
+            }
+
+        } else if (signal.type === 'candidate') {
+            const pc = peers.get(from);
+            if (pc && pc.remoteDescription) {
+                await pc.addIceCandidate(new RTCIceCandidate(signal.candidate));
+            }
+        }
+    }
+
+    // ===== 向新用户发起连接 =====
     async function makeOffer(peerId) {
+        addLog('向对方发起连接...', 'info');
         const pc = createPC(peerId);
         const offer = await pc.createOffer({ offerToReceiveAudio: true });
         await pc.setLocalDescription(offer);
-        ch.trigger('client-signal', { to: peerId, from: myId, type: 'offer', sdp: offer });
-        addLog('发起连接到: ' + peerId.substr(0,8), '');
-    }
-
-    async function handleSignal(data) {
-        if (data.to !== myId) return;
-        const fromId = data.from;
-
-        if (data.type === 'offer') {
-            const pc = createPC(fromId);
-            await pc.setRemoteDescription(new RTCSessionDescription(data.sdp));
-            const answer = await pc.createAnswer();
-            await pc.setLocalDescription(answer);
-            ch.trigger('client-signal', { to: fromId, from: myId, type: 'answer', sdp: answer });
-            addLog('接受连接请求', '');
-        } else if (data.type === 'answer') {
-            const pc = peers.get(fromId);
-            if (pc) await pc.setRemoteDescription(new RTCSessionDescription(data.sdp));
-        } else if (data.type === 'candidate') {
-            const pc = peers.get(fromId);
-            if (pc && pc.remoteDescription) {
-                await pc.addIceCandidate(new RTCIceCandidate(data.candidate));
-            }
-        } else if (data.type === 'hello') {
-            // 对方加入了，我向对方发起连接
-            onlineUsers.add(fromId);
-            updateCount();
-            addLog('新用户加入: ' + fromId.substr(0,8), 'join');
-            await makeOffer(fromId);
-        } else if (data.type === 'bye') {
-            onlineUsers.delete(fromId);
-            updateCount();
-            if (peers.has(fromId)) { peers.get(fromId).close(); peers.delete(fromId); }
-            addLog('用户离开', 'leave');
-        }
+        sendSignal(peerId, { type: 'offer', sdp: offer });
     }
 
     // ===== 加入频道 =====
     async function joinChannel() {
-        const name = document.getElementById('channelInput').value.trim();
-        if (!name) { showToast('请输入频道号'); return; }
-        if (name.length < 4) { showToast('频道号至少4位'); return; }
+        const ch = document.getElementById('chInput').value.trim();
+        if (!ch) { showToast('请输入频道号'); return; }
+        if (ch.length < 2) { showToast('频道号至少2位'); return; }
 
-        localStorage.setItem('lastChannel', name);
-        currentChannel = name;
+        localStorage.setItem('lastCh', ch);
+        currentChannel = ch;
 
         // 获取麦克风
         try {
             localStream = await navigator.mediaDevices.getUserMedia({
-                audio: { echoCancellation: true, noiseSuppression: true },
+                audio: { echoCancellation: true, noiseSuppression: true, sampleRate: 16000 },
                 video: false
             });
             localStream.getAudioTracks().forEach(t => t.enabled = false);
-            addLog('麦克风就绪', '');
+            addLog('麦克风就绪', 'ok');
         } catch(e) {
             showToast('❌ 请允许麦克风权限');
+            addLog('麦克风权限被拒绝', 'err');
             return;
         }
 
-        // 连接 Pusher
-        pusher = new Pusher(PUSHER_KEY, { cluster: PUSHER_CLUSTER, forceTLS: true });
-
-        // 用频道号的哈希作为 Pusher 频道名
-        const chHash = await hashStr(name);
-        ch = pusher.subscribe('private-' + chHash);
-
-        // 注意：private 频道也需要后端，改用普通频道
-        // 重新订阅普通频道
-        pusher.unsubscribe('private-' + chHash);
-        ch = pusher.subscribe('walkie-' + chHash);
-
-        ch.bind('pusher:subscription_succeeded', () => {
-            addLog('已加入频道', 'join');
-            // 广播自己加入
-            ch.trigger('client-signal', { to: 'all', from: myId, type: 'hello' });
+        // 订阅 Supabase Realtime 频道
+        sbChannel = supabase.channel('walkie_' + ch, {
+            config: { broadcast: { self: false } }
         });
 
-        ch.bind('client-signal', async (data) => {
-            if (data.to === 'all' && data.from !== myId && data.type === 'hello') {
-                // 有人广播加入，记录并向对方发起连接
-                onlineUsers.add(data.from);
-                updateCount();
-                addLog('发现用户: ' + data.from.substr(0,8), 'join');
-                await makeOffer(data.from);
-                // 回复自己也在
-                ch.trigger('client-signal', { to: data.from, from: myId, type: 'hello' });
-            } else {
-                await handleSignal(data);
+        // 监听信令消息
+        sbChannel.on('broadcast', { event: 'signal' }, ({ payload }) => {
+            if (payload.to === myId) {
+                handleSignal(payload.from, payload.signal);
             }
         });
 
-        pusher.connection.bind('connected', () => {
-            statusEl.textContent = '📻 ' + name + ' · 空闲';
-            statusEl.className = 'status-bar online';
-            showToast('✅ 已加入: ' + name);
+        // 监听用户加入
+        sbChannel.on('broadcast', { event: 'join' }, ({ payload }) => {
+            if (payload.from !== myId) {
+                addLog('新用户加入: ' + payload.from.substr(0,8), 'ok');
+                onlineUsers.add(payload.from);
+                updateCount();
+                // 向新用户发起连接
+                makeOffer(payload.from);
+            }
+        });
+
+        // 监听用户离开
+        sbChannel.on('broadcast', { event: 'leave' }, ({ payload }) => {
+            if (payload.from !== myId) {
+                addLog('用户离开', 'err');
+                onlineUsers.delete(payload.from);
+                if (peers.has(payload.from)) {
+                    peers.get(payload.from).close();
+                    peers.delete(payload.from);
+                }
+                updateCount();
+                if (peers.size === 0) {
+                    talkBtn.disabled = true;
+                    document.getElementById('hint').textContent = '等待对方加入...';
+                    statusEl.textContent = '📻 ' + ch + ' · 等待对方';
+                }
+            }
+        });
+
+        // 订阅成功后广播自己加入
+        sbChannel.subscribe((status) => {
+            if (status === 'SUBSCRIBED') {
+                addLog('已加入频道: ' + ch, 'ok');
+                // 广播自己加入
+                broadcastSignal('join', {});
+                showToast('✅ 已加入: ' + ch);
+                statusEl.textContent = '📻 ' + ch + ' · 等待对方...';
+                statusEl.className = 'status-bar online';
+            } else if (status === 'CHANNEL_ERROR') {
+                addLog('频道连接失败', 'err');
+                showToast('❌ 连接失败，请重试');
+            }
         });
 
         // 更新 UI
         document.getElementById('joinSection').classList.add('hidden');
-        document.getElementById('channelInfo').classList.add('show');
-        document.getElementById('channelName').textContent = '📻 ' + name;
-        talkBtn.disabled = false;
-        document.getElementById('talkHint').textContent = '按住大按钮说话 · 松开停止';
-        document.getElementById('encryptIndicator').style.display = 'flex';
+        document.getElementById('connInfo').classList.add('show');
+        document.getElementById('chName').textContent = '📻 ' + ch;
+        document.getElementById('hint').textContent = '等待对方加入...';
     }
 
-    async function hashStr(str) {
-        const enc = new TextEncoder();
-        const hash = await crypto.subtle.digest('SHA-256', enc.encode(str));
-        return Array.from(new Uint8Array(hash)).slice(0,8).map(b=>b.toString(16).padStart(2,'0')).join('');
-    }
-
-    // ===== 离开 =====
+    // ===== 离开频道 =====
     function leaveChannel() {
         if (isTalking) stopTalking();
+
         // 广播离开
-        if (ch) ch.trigger('client-signal', { to: 'all', from: myId, type: 'bye' });
-        peers.forEach(pc => pc.close()); peers.clear();
+        broadcastSignal('leave', {});
+
+        // 关闭所有连接
+        peers.forEach(pc => pc.close());
+        peers.clear();
         onlineUsers.clear();
-        if (pusher) { pusher.disconnect(); pusher = null; ch = null; }
-        if (localStream) { localStream.getTracks().forEach(t => t.stop()); localStream = null; }
+
+        // 取消订阅
+        if (sbChannel) {
+            supabase.removeChannel(sbChannel);
+            sbChannel = null;
+        }
+
+        // 停止麦克风
+        if (localStream) {
+            localStream.getTracks().forEach(t => t.stop());
+            localStream = null;
+        }
+
         currentChannel = '';
         document.getElementById('joinSection').classList.remove('hidden');
-        document.getElementById('channelInfo').classList.remove('show');
+        document.getElementById('connInfo').classList.remove('show');
         talkBtn.disabled = true;
-        document.getElementById('talkHint').textContent = '请先加入频道';
-        document.getElementById('encryptIndicator').style.display = 'none';
-        statusEl.textContent = '已就绪'; statusEl.className = 'status-bar online';
-        document.getElementById('userCount').textContent = '1';
+        document.getElementById('hint').textContent = '请先加入频道';
+        document.getElementById('onlineCount').textContent = '1';
+        statusEl.textContent = '就绪';
+        statusEl.className = 'status-bar';
+        addLog('已离开频道', 'info');
         showToast('已离开频道');
     }
 
@@ -359,6 +401,7 @@
         statusEl.className = 'status-bar online';
     }
 
+    // ===== 事件绑定 =====
     talkBtn.addEventListener('mousedown', e => { e.preventDefault(); startTalking(); });
     talkBtn.addEventListener('mouseup', e => { e.preventDefault(); stopTalking(); });
     talkBtn.addEventListener('mouseleave', () => { if (isTalking) stopTalking(); });
@@ -373,10 +416,11 @@
         if (e.code === 'Space') { e.preventDefault(); stopTalking(); }
     });
     document.addEventListener('visibilitychange', () => { if (document.hidden && isTalking) stopTalking(); });
-    document.getElementById('channelInput').addEventListener('keydown', e => { if (e.key === 'Enter') joinChannel(); });
+    document.getElementById('chInput').addEventListener('keydown', e => { if (e.key === 'Enter') joinChannel(); });
 
-    const last = localStorage.getItem('lastChannel');
-    if (last) document.getElementById('channelInput').value = last;
+    // 自动填入上次频道号
+    const last = localStorage.getItem('lastCh');
+    if (last) document.getElementById('chInput').value = last;
 </script>
 </body>
 </html>
