@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <title>📻 加密对讲机</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
@@ -15,7 +14,6 @@
             display: flex;
             flex-direction: column;
             color: #fff;
-            overflow: hidden;
         }
         header {
             padding: 16px 20px;
@@ -24,14 +22,7 @@
             border-bottom: 1px solid rgba(255,255,255,0.1);
         }
         header h1 { font-size: 1.4rem; display: flex; align-items: center; justify-content: center; gap: 8px; }
-        .secure-badge {
-            font-size: 0.7rem;
-            background: linear-gradient(90deg, #4ade80, #22c55e);
-            color: #000;
-            padding: 2px 8px;
-            border-radius: 10px;
-            font-weight: 700;
-        }
+        .secure-badge { font-size: 0.7rem; background: linear-gradient(90deg, #4ade80, #22c55e); color: #000; padding: 2px 8px; border-radius: 10px; font-weight: 700; }
         .status-bar { margin-top: 6px; font-size: 0.82rem; color: #888; }
         .status-bar.online { color: #4ade80; }
         .status-bar.speaking { color: #f87171; animation: blink 0.6s infinite; }
@@ -41,93 +32,54 @@
         .join-section { padding: 16px 20px; background: rgba(0,0,0,0.2); border-bottom: 1px solid rgba(255,255,255,0.08); }
         .join-section.hidden { display: none; }
         .input-row { display: flex; gap: 10px; max-width: 420px; margin: 0 auto; }
-        .input-row input {
-            flex: 1; padding: 13px 16px;
-            border: 2px solid rgba(255,255,255,0.15);
-            border-radius: 12px;
-            background: rgba(255,255,255,0.08);
-            color: #fff; font-size: 1rem; outline: none;
-            transition: border-color 0.3s;
-        }
+        .input-row input { flex: 1; padding: 13px 16px; border: 2px solid rgba(255,255,255,0.15); border-radius: 12px; background: rgba(255,255,255,0.08); color: #fff; font-size: 1rem; outline: none; transition: border-color 0.3s; }
         .input-row input:focus { border-color: #00d4ff; }
         .input-row input::placeholder { color: #555; }
         .btn { padding: 13px 22px; border: none; border-radius: 12px; font-size: 0.95rem; font-weight: 600; cursor: pointer; transition: all 0.2s; }
         .btn-join { background: linear-gradient(90deg, #00d4ff, #7c3aed); color: #fff; }
-        .btn-join:active { transform: scale(0.97); }
         .btn-leave { background: rgba(255,100,100,0.2); color: #f87171; border: 1px solid rgba(255,100,100,0.3); font-size: 0.85rem; padding: 8px 16px; border-radius: 8px; cursor: pointer; }
 
-        .channel-info {
-            display: none; padding: 10px 20px;
-            background: rgba(0,212,255,0.08);
-            border-bottom: 1px solid rgba(0,212,255,0.15);
-            align-items: center; justify-content: space-between;
-        }
+        .channel-info { display: none; padding: 10px 20px; background: rgba(0,212,255,0.08); border-bottom: 1px solid rgba(0,212,255,0.15); align-items: center; justify-content: space-between; }
         .channel-info.show { display: flex; }
         .channel-name { font-size: 0.9rem; color: #00d4ff; }
         .online-count { font-size: 0.82rem; color: #888; }
         .online-count span { color: #4ade80; font-weight: 600; }
 
-        .talk-section {
-            flex: 1; display: flex; flex-direction: column;
-            align-items: center; justify-content: center; padding: 30px 20px;
-        }
+        .talk-section { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 30px 20px; }
         .talk-btn {
             width: 190px; height: 190px; border-radius: 50%; border: none;
             background: radial-gradient(circle at 35% 35%, #2d2d5a, #1a1a2e);
-            box-shadow: 0 8px 32px rgba(0,0,0,0.6), inset 0 -4px 16px rgba(0,0,0,0.4), inset 0 4px 16px rgba(255,255,255,0.04), 0 0 0 3px rgba(255,255,255,0.05);
+            box-shadow: 0 8px 32px rgba(0,0,0,0.6), inset 0 -4px 16px rgba(0,0,0,0.4);
             cursor: pointer; transition: all 0.12s;
             display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px;
             user-select: none; -webkit-user-select: none; touch-action: manipulation;
         }
-        .talk-btn .icon { font-size: 3.8rem; transition: transform 0.12s; }
+        .talk-btn .icon { font-size: 3.8rem; }
         .talk-btn .label { font-size: 0.95rem; color: #666; font-weight: 500; }
         .talk-btn:disabled { opacity: 0.4; cursor: not-allowed; }
-        .talk-btn.active {
-            background: radial-gradient(circle at 35% 35%, #cc2222, #880000);
-            box-shadow: 0 0 60px rgba(255,50,50,0.5), 0 8px 32px rgba(0,0,0,0.5);
-            transform: scale(0.96);
-        }
-        .talk-btn.active .icon { transform: scale(1.1); }
+        .talk-btn.active { background: radial-gradient(circle at 35% 35%, #cc2222, #880000); box-shadow: 0 0 60px rgba(255,50,50,0.5); transform: scale(0.96); }
         .talk-btn.active .label { color: #ffaaaa; }
-        .talk-btn.receiving-audio {
-            box-shadow: 0 0 60px rgba(96,165,250,0.5), 0 8px 32px rgba(0,0,0,0.5);
-        }
         .talk-hint { margin-top: 24px; font-size: 0.82rem; color: #444; text-align: center; line-height: 1.8; }
-        .encrypt-indicator {
-            display: flex; align-items: center; gap: 6px;
-            margin-top: 16px; font-size: 0.78rem; color: #4ade80;
-        }
-        .encrypt-dot { width: 8px; height: 8px; border-radius: 50%; background: #4ade80; animation: pulse-green 2s infinite; }
-        @keyframes pulse-green { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:0.5;transform:scale(0.8)} }
+        .encrypt-indicator { display: flex; align-items: center; gap: 6px; margin-top: 16px; font-size: 0.78rem; color: #4ade80; }
+        .encrypt-dot { width: 8px; height: 8px; border-radius: 50%; background: #4ade80; animation: pg 2s infinite; }
+        @keyframes pg { 0%,100%{opacity:1} 50%{opacity:0.4} }
 
-        .log-section {
-            background: rgba(0,0,0,0.5); border-top: 1px solid rgba(255,255,255,0.08);
-            padding: 12px 16px; max-height: 130px; overflow-y: auto;
-        }
-        .log-section::-webkit-scrollbar { width: 3px; }
-        .log-section::-webkit-scrollbar-thumb { background: #333; border-radius: 2px; }
-        .log-entry { font-size: 0.75rem; padding: 3px 0; color: #555; border-bottom: 1px solid rgba(255,255,255,0.03); }
-        .log-entry.speak { color: #4ade80; }
+        .log-section { background: rgba(0,0,0,0.5); border-top: 1px solid rgba(255,255,255,0.08); padding: 12px 16px; max-height: 130px; overflow-y: auto; }
+        .log-entry { font-size: 0.75rem; padding: 3px 0; color: #555; }
         .log-entry.join { color: #60a5fa; }
         .log-entry.leave { color: #f87171; }
+        .log-entry.speak { color: #4ade80; }
         .log-entry.error { color: #f87171; }
         .log-entry.secure { color: #a78bfa; }
 
-        .toast {
-            position: fixed; top: 70px; left: 50%; transform: translateX(-50%);
-            background: rgba(10,10,20,0.95); color: #fff;
-            padding: 11px 22px; border-radius: 12px; font-size: 0.88rem;
-            z-index: 1000; animation: toastIn 0.3s ease;
-            border: 1px solid rgba(255,255,255,0.1); white-space: nowrap;
-        }
-        @keyframes toastIn { from{opacity:0;transform:translateX(-50%) translateY(-15px)} to{opacity:1;transform:translateX(-50%) translateY(0)} }
+        .toast { position: fixed; top: 70px; left: 50%; transform: translateX(-50%); background: rgba(10,10,20,0.95); color: #fff; padding: 11px 22px; border-radius: 12px; font-size: 0.88rem; z-index: 1000; border: 1px solid rgba(255,255,255,0.1); white-space: nowrap; animation: ti 0.3s ease; }
+        @keyframes ti { from{opacity:0;transform:translateX(-50%) translateY(-15px)} to{opacity:1;transform:translateX(-50%) translateY(0)} }
     </style>
 </head>
 <body>
-
 <header>
-    <h1>📻 对讲机 <span class="secure-badge">🔒 端对端加密</span></h1>
-    <div class="status-bar" id="status">连接中...</div>
+    <h1>📻 对讲机 <span class="secure-badge">🔒 加密</span></h1>
+    <div class="status-bar" id="status">就绪</div>
 </header>
 
 <div class="join-section" id="joinSection">
@@ -138,7 +90,7 @@
 </div>
 
 <div class="channel-info" id="channelInfo">
-    <div class="channel-name" id="channelName">📻 频道: -</div>
+    <div class="channel-name" id="channelName">📻 -</div>
     <div style="display:flex;align-items:center;gap:12px">
         <div class="online-count">在线 <span id="userCount">1</span> 人</div>
         <button class="btn-leave" onclick="leaveChannel()">离开</button>
@@ -152,148 +104,95 @@
     </button>
     <div class="talk-hint" id="talkHint">请先加入频道</div>
     <div class="encrypt-indicator" id="encryptIndicator" style="display:none">
-        <div class="encrypt-dot"></div>
-        端对端加密已启用
+        <div class="encrypt-dot"></div> 端对端加密已启用
     </div>
 </div>
 
 <div class="log-section" id="logSection">
-    <div class="log-entry">系统就绪...</div>
+    <div class="log-entry">系统就绪</div>
 </div>
 
-<!-- Pusher SDK -->
 <script src="https://js.pusher.com/8.2.0/pusher.min.js"></script>
 <script>
-    // ===== Pusher 配置 =====
     const PUSHER_KEY = '8e6caec8bd3839137a9b';
     const PUSHER_CLUSTER = 'ap3';
 
-    // ===== 加密工具 =====
-    const Crypto = {
-        async deriveKey(channelName) {
-            const enc = new TextEncoder();
-            const keyMaterial = await window.crypto.subtle.importKey(
-                'raw', enc.encode(channelName + '_walkie_salt_2026'),
-                { name: 'PBKDF2' }, false, ['deriveKey']
-            );
-            return window.crypto.subtle.deriveKey(
-                { name: 'PBKDF2', salt: enc.encode('walkie_talkie_iv'), iterations: 100000, hash: 'SHA-256' },
-                keyMaterial, { name: 'AES-GCM', length: 256 }, false, ['encrypt', 'decrypt']
-            );
-        },
-        async hashChannel(name) {
-            const enc = new TextEncoder();
-            const hash = await window.crypto.subtle.digest('SHA-256', enc.encode(name + '_ch'));
-            return 'ch-' + Array.from(new Uint8Array(hash)).slice(0, 8).map(b => b.toString(16).padStart(2,'0')).join('');
-        },
-        async encrypt(key, base64Audio) {
-            const enc = new TextEncoder();
-            const data = enc.encode(base64Audio);
-            const iv = window.crypto.getRandomValues(new Uint8Array(12));
-            const encrypted = await window.crypto.subtle.encrypt({ name: 'AES-GCM', iv }, key, data);
-            const ivB64 = btoa(String.fromCharCode(...iv));
-            const encB64 = btoa(String.fromCharCode(...new Uint8Array(encrypted)));
-            return ivB64 + '.' + encB64;
-        },
-        async decrypt(key, encryptedStr) {
-            const [ivB64, encB64] = encryptedStr.split('.');
-            const iv = Uint8Array.from(atob(ivB64), c => c.charCodeAt(0));
-            const enc = Uint8Array.from(atob(encB64), c => c.charCodeAt(0));
-            const decrypted = await window.crypto.subtle.decrypt({ name: 'AES-GCM', iv }, key, enc);
-            return new TextDecoder().decode(decrypted);
-        }
-    };
-
-    // ===== 状态 =====
-    let pusher = null;
-    let channel = null;
-    let myId = 'user_' + Math.random().toString(36).substr(2, 8);
+    let pusher = null, ch = null;
+    let myId = 'u_' + Math.random().toString(36).substr(2, 8);
     let currentChannel = '';
-    let cryptoKey = null;
     let peers = new Map();
     let localStream = null;
     let isTalking = false;
-    let mediaRecorder = null;
-    let audioChunks = [];
+    let onlineUsers = new Set();
 
-    // ===== 元素 =====
     const statusEl = document.getElementById('status');
-    const joinSection = document.getElementById('joinSection');
-    const channelInfo = document.getElementById('channelInfo');
-    const channelNameEl = document.getElementById('channelName');
-    const userCountEl = document.getElementById('userCount');
     const talkBtn = document.getElementById('talkBtn');
-    const talkHint = document.getElementById('talkHint');
-    const encryptIndicator = document.getElementById('encryptIndicator');
-    const logSection = document.getElementById('logSection');
 
-    function addLog(msg, type = '') {
-        const entry = document.createElement('div');
-        entry.className = 'log-entry ' + type;
-        const t = new Date().toLocaleTimeString('zh-CN', {hour:'2-digit',minute:'2-digit',second:'2-digit'});
-        entry.textContent = `[${t}] ${msg}`;
-        logSection.insertBefore(entry, logSection.firstChild);
+    function addLog(msg, type='') {
+        const el = document.createElement('div');
+        el.className = 'log-entry ' + type;
+        el.textContent = '[' + new Date().toLocaleTimeString('zh-CN',{hour:'2-digit',minute:'2-digit',second:'2-digit'}) + '] ' + msg;
+        document.getElementById('logSection').insertBefore(el, document.getElementById('logSection').firstChild);
     }
 
     function showToast(msg) {
         document.querySelector('.toast')?.remove();
         const t = document.createElement('div');
-        t.className = 'toast';
-        t.textContent = msg;
+        t.className = 'toast'; t.textContent = msg;
         document.body.appendChild(t);
         setTimeout(() => t.remove(), 2500);
+    }
+
+    function updateCount() {
+        document.getElementById('userCount').textContent = onlineUsers.size + 1;
     }
 
     // ===== WebRTC =====
     const RTC_CONFIG = {
         iceServers: [
             { urls: 'stun:stun.l.google.com:19302' },
-            { urls: 'stun:stun1.l.google.com:19302' },
-            { urls: 'stun:stun.cloudflare.com:3478' }
+            { urls: 'stun:stun1.l.google.com:19302' }
         ]
     };
 
-    function createPeerConnection(peerId) {
+    function createPC(peerId) {
         if (peers.has(peerId)) return peers.get(peerId);
-
         const pc = new RTCPeerConnection(RTC_CONFIG);
         peers.set(peerId, pc);
 
         if (localStream) {
-            localStream.getTracks().forEach(track => pc.addTrack(track, localStream));
+            localStream.getTracks().forEach(t => pc.addTrack(t, localStream));
         }
 
-        pc.ontrack = (event) => {
-            addLog('收到对方音频', 'join');
+        pc.ontrack = (e) => {
+            addLog('🔊 收到对方音频', 'join');
             const audio = new Audio();
-            audio.srcObject = event.streams[0];
-            audio.play().catch(() => {});
-            talkBtn.classList.add('receiving-audio');
+            audio.srcObject = e.streams[0];
+            audio.play().catch(err => addLog('播放失败:' + err.message, 'error'));
             statusEl.textContent = '🔵 对方正在说话...';
             statusEl.className = 'status-bar receiving';
+            e.streams[0].getTracks()[0].onended = () => {
+                if (!isTalking) {
+                    statusEl.textContent = '📻 ' + currentChannel + ' · 空闲';
+                    statusEl.className = 'status-bar online';
+                }
+            };
         };
 
-        pc.onicecandidate = (event) => {
-            if (event.candidate) {
-                sendPusher('client-signal', {
-                    to: peerId,
-                    from: myId,
-                    signal: { type: 'candidate', candidate: event.candidate }
-                });
+        pc.onicecandidate = (e) => {
+            if (e.candidate) {
+                ch.trigger('client-signal', { to: peerId, from: myId, type: 'candidate', candidate: e.candidate });
             }
         };
 
         pc.onconnectionstatechange = () => {
+            addLog('连接状态: ' + pc.connectionState, pc.connectionState === 'connected' ? 'join' : '');
             if (pc.connectionState === 'connected') {
-                addLog('✅ 连接成功！', 'join');
-                showToast('✅ 已与对方建立连接！');
-                updateCount();
-                // 连接成功后取消静音
-                if (!isTalking && localStream) {
-                    localStream.getAudioTracks().forEach(t => t.enabled = false);
-                }
-            } else if (pc.connectionState === 'disconnected' || pc.connectionState === 'failed') {
+                showToast('✅ 连接成功！可以说话了');
+            }
+            if (pc.connectionState === 'failed' || pc.connectionState === 'disconnected') {
                 peers.delete(peerId);
+                onlineUsers.delete(peerId);
                 updateCount();
             }
         };
@@ -301,175 +200,139 @@
         return pc;
     }
 
-    async function createOffer(peerId) {
-        const pc = createPeerConnection(peerId);
+    async function makeOffer(peerId) {
+        const pc = createPC(peerId);
         const offer = await pc.createOffer({ offerToReceiveAudio: true });
         await pc.setLocalDescription(offer);
-        sendPusher('client-signal', {
-            to: peerId,
-            from: myId,
-            signal: { type: 'offer', sdp: offer }
-        });
-        addLog('发起连接...', '');
+        ch.trigger('client-signal', { to: peerId, from: myId, type: 'offer', sdp: offer });
+        addLog('发起连接到: ' + peerId.substr(0,8), '');
     }
 
-    async function handleWebRTCSignal(fromId, signal) {
-        if (signal.type === 'offer') {
-            const pc = createPeerConnection(fromId);
-            await pc.setRemoteDescription(new RTCSessionDescription(signal.sdp));
+    async function handleSignal(data) {
+        if (data.to !== myId) return;
+        const fromId = data.from;
+
+        if (data.type === 'offer') {
+            const pc = createPC(fromId);
+            await pc.setRemoteDescription(new RTCSessionDescription(data.sdp));
             const answer = await pc.createAnswer();
             await pc.setLocalDescription(answer);
-            sendPusher('client-signal', {
-                to: fromId,
-                from: myId,
-                signal: { type: 'answer', sdp: answer }
-            });
-        } else if (signal.type === 'answer') {
+            ch.trigger('client-signal', { to: fromId, from: myId, type: 'answer', sdp: answer });
+            addLog('接受连接请求', '');
+        } else if (data.type === 'answer') {
             const pc = peers.get(fromId);
-            if (pc) await pc.setRemoteDescription(new RTCSessionDescription(signal.sdp));
-        } else if (signal.type === 'candidate') {
+            if (pc) await pc.setRemoteDescription(new RTCSessionDescription(data.sdp));
+        } else if (data.type === 'candidate') {
             const pc = peers.get(fromId);
             if (pc && pc.remoteDescription) {
-                await pc.addIceCandidate(new RTCIceCandidate(signal.candidate));
+                await pc.addIceCandidate(new RTCIceCandidate(data.candidate));
             }
-        }
-    }
-
-    function updateCount() {
-        const connected = Array.from(peers.values()).filter(pc =>
-            pc.connectionState === 'connected' || pc.connectionState === 'connecting'
-        ).length;
-        userCountEl.textContent = connected + 1;
-    }
-
-    // ===== Pusher 信令 =====
-    function sendPusher(event, data) {
-        if (channel) {
-            channel.trigger(event, data);
+        } else if (data.type === 'hello') {
+            // 对方加入了，我向对方发起连接
+            onlineUsers.add(fromId);
+            updateCount();
+            addLog('新用户加入: ' + fromId.substr(0,8), 'join');
+            await makeOffer(fromId);
+        } else if (data.type === 'bye') {
+            onlineUsers.delete(fromId);
+            updateCount();
+            if (peers.has(fromId)) { peers.get(fromId).close(); peers.delete(fromId); }
+            addLog('用户离开', 'leave');
         }
     }
 
     // ===== 加入频道 =====
     async function joinChannel() {
-        const chName = document.getElementById('channelInput').value.trim();
-        if (!chName) { showToast('请输入频道号'); return; }
-        if (chName.length < 4) { showToast('频道号至少4位'); return; }
+        const name = document.getElementById('channelInput').value.trim();
+        if (!name) { showToast('请输入频道号'); return; }
+        if (name.length < 4) { showToast('频道号至少4位'); return; }
 
-        localStorage.setItem('lastChannel', chName);
-        showToast('正在加入...');
-        addLog('初始化加密...', 'secure');
-
-        cryptoKey = await Crypto.deriveKey(chName);
-        const hashedCh = await Crypto.hashChannel(chName);
-        currentChannel = chName;
-
-        addLog('🔒 AES-256 加密就绪', 'secure');
+        localStorage.setItem('lastChannel', name);
+        currentChannel = name;
 
         // 获取麦克风
         try {
             localStream = await navigator.mediaDevices.getUserMedia({
-                audio: { echoCancellation: true, noiseSuppression: true, sampleRate: 16000 },
+                audio: { echoCancellation: true, noiseSuppression: true },
                 video: false
             });
-            // 默认静音，按住才说话
             localStream.getAudioTracks().forEach(t => t.enabled = false);
             addLog('麦克风就绪', '');
         } catch(e) {
             showToast('❌ 请允许麦克风权限');
-            addLog('麦克风权限被拒绝', 'error');
             return;
         }
 
-        // 初始化 Pusher
-        pusher = new Pusher(PUSHER_KEY, {
-            cluster: PUSHER_CLUSTER,
-            forceTLS: true
+        // 连接 Pusher
+        pusher = new Pusher(PUSHER_KEY, { cluster: PUSHER_CLUSTER, forceTLS: true });
+
+        // 用频道号的哈希作为 Pusher 频道名
+        const chHash = await hashStr(name);
+        ch = pusher.subscribe('private-' + chHash);
+
+        // 注意：private 频道也需要后端，改用普通频道
+        // 重新订阅普通频道
+        pusher.unsubscribe('private-' + chHash);
+        ch = pusher.subscribe('walkie-' + chHash);
+
+        ch.bind('pusher:subscription_succeeded', () => {
+            addLog('已加入频道', 'join');
+            // 广播自己加入
+            ch.trigger('client-signal', { to: 'all', from: myId, type: 'hello' });
         });
 
-        // 订阅频道（用哈希后的频道名）
-        channel = pusher.subscribe('presence-' + hashedCh);
-
-        channel.bind('pusher:subscription_succeeded', (members) => {
-            addLog('已加入频道，在线: ' + members.count + ' 人', 'join');
-            userCountEl.textContent = members.count;
-
-            // 向频道内其他人发起连接
-            members.each((member) => {
-                if (member.id !== myId) {
-                    createOffer(member.id);
-                }
-            });
-        });
-
-        channel.bind('pusher:member_added', (member) => {
-            addLog('新用户加入', 'join');
-            updateCount();
-        });
-
-        channel.bind('pusher:member_removed', (member) => {
-            addLog('用户离开', 'leave');
-            if (peers.has(member.id)) {
-                peers.get(member.id).close();
-                peers.delete(member.id);
+        ch.bind('client-signal', async (data) => {
+            if (data.to === 'all' && data.from !== myId && data.type === 'hello') {
+                // 有人广播加入，记录并向对方发起连接
+                onlineUsers.add(data.from);
+                updateCount();
+                addLog('发现用户: ' + data.from.substr(0,8), 'join');
+                await makeOffer(data.from);
+                // 回复自己也在
+                ch.trigger('client-signal', { to: data.from, from: myId, type: 'hello' });
+            } else {
+                await handleSignal(data);
             }
-            updateCount();
-        });
-
-        // 接收 WebRTC 信令
-        channel.bind('client-signal', async (data) => {
-            if (data.to === myId) {
-                await handleWebRTCSignal(data.from, data.signal);
-            }
-        });
-
-        channel.bind('pusher:subscription_error', (err) => {
-            addLog('频道订阅失败: ' + JSON.stringify(err), 'error');
         });
 
         pusher.connection.bind('connected', () => {
-            statusEl.textContent = '📻 ' + chName + ' · 空闲';
+            statusEl.textContent = '📻 ' + name + ' · 空闲';
             statusEl.className = 'status-bar online';
-        });
-
-        pusher.connection.bind('error', (err) => {
-            addLog('Pusher 连接错误', 'error');
+            showToast('✅ 已加入: ' + name);
         });
 
         // 更新 UI
-        joinSection.classList.add('hidden');
-        channelInfo.classList.add('show');
-        channelNameEl.textContent = '📻 ' + chName;
+        document.getElementById('joinSection').classList.add('hidden');
+        document.getElementById('channelInfo').classList.add('show');
+        document.getElementById('channelName').textContent = '📻 ' + name;
         talkBtn.disabled = false;
-        talkHint.textContent = '按住大按钮说话 · 松开停止\nPC端可按空格键';
-        encryptIndicator.style.display = 'flex';
-        statusEl.textContent = '📻 ' + chName + ' · 连接中...';
-        statusEl.className = 'status-bar online';
+        document.getElementById('talkHint').textContent = '按住大按钮说话 · 松开停止';
+        document.getElementById('encryptIndicator').style.display = 'flex';
     }
 
-    // ===== 离开频道 =====
+    async function hashStr(str) {
+        const enc = new TextEncoder();
+        const hash = await crypto.subtle.digest('SHA-256', enc.encode(str));
+        return Array.from(new Uint8Array(hash)).slice(0,8).map(b=>b.toString(16).padStart(2,'0')).join('');
+    }
+
+    // ===== 离开 =====
     function leaveChannel() {
         if (isTalking) stopTalking();
-
-        peers.forEach(pc => pc.close());
-        peers.clear();
-
-        if (channel) { pusher.unsubscribe(channel.name); channel = null; }
-        if (pusher) { pusher.disconnect(); pusher = null; }
-
-        if (localStream) {
-            localStream.getTracks().forEach(t => t.stop());
-            localStream = null;
-        }
-
+        // 广播离开
+        if (ch) ch.trigger('client-signal', { to: 'all', from: myId, type: 'bye' });
+        peers.forEach(pc => pc.close()); peers.clear();
+        onlineUsers.clear();
+        if (pusher) { pusher.disconnect(); pusher = null; ch = null; }
+        if (localStream) { localStream.getTracks().forEach(t => t.stop()); localStream = null; }
         currentChannel = '';
-        joinSection.classList.remove('hidden');
-        channelInfo.classList.remove('show');
+        document.getElementById('joinSection').classList.remove('hidden');
+        document.getElementById('channelInfo').classList.remove('show');
         talkBtn.disabled = true;
-        talkHint.textContent = '请先加入频道';
-        encryptIndicator.style.display = 'none';
-        statusEl.textContent = '已就绪';
-        statusEl.className = 'status-bar online';
-        addLog('已离开频道', 'leave');
+        document.getElementById('talkHint').textContent = '请先加入频道';
+        document.getElementById('encryptIndicator').style.display = 'none';
+        statusEl.textContent = '已就绪'; statusEl.className = 'status-bar online';
+        document.getElementById('userCount').textContent = '1';
         showToast('已离开频道');
     }
 
@@ -483,7 +346,6 @@
         talkBtn.querySelector('.label').textContent = '正在说话...';
         statusEl.textContent = '🔴 我正在说话...';
         statusEl.className = 'status-bar speaking';
-        addLog('开始说话', 'speak');
     }
 
     function stopTalking() {
@@ -495,10 +357,8 @@
         talkBtn.querySelector('.label').textContent = '按住说话';
         statusEl.textContent = '📻 ' + currentChannel + ' · 空闲';
         statusEl.className = 'status-bar online';
-        addLog('停止说话', 'speak');
     }
 
-    // ===== 按钮事件 =====
     talkBtn.addEventListener('mousedown', e => { e.preventDefault(); startTalking(); });
     talkBtn.addEventListener('mouseup', e => { e.preventDefault(); stopTalking(); });
     talkBtn.addEventListener('mouseleave', () => { if (isTalking) stopTalking(); });
@@ -507,28 +367,16 @@
     talkBtn.addEventListener('touchcancel', e => { e.preventDefault(); stopTalking(); }, { passive: false });
 
     document.addEventListener('keydown', e => {
-        if (e.code === 'Space' && !e.repeat && document.activeElement.tagName !== 'INPUT') {
-            e.preventDefault(); startTalking();
-        }
+        if (e.code === 'Space' && !e.repeat && document.activeElement.tagName !== 'INPUT') { e.preventDefault(); startTalking(); }
     });
     document.addEventListener('keyup', e => {
         if (e.code === 'Space') { e.preventDefault(); stopTalking(); }
     });
+    document.addEventListener('visibilitychange', () => { if (document.hidden && isTalking) stopTalking(); });
+    document.getElementById('channelInput').addEventListener('keydown', e => { if (e.key === 'Enter') joinChannel(); });
 
-    document.addEventListener('visibilitychange', () => {
-        if (document.hidden && isTalking) stopTalking();
-    });
-
-    document.getElementById('channelInput').addEventListener('keydown', e => {
-        if (e.key === 'Enter') joinChannel();
-    });
-
-    // 自动填入上次频道号
-    const lastChannel = localStorage.getItem('lastChannel');
-    if (lastChannel) document.getElementById('channelInput').value = lastChannel;
-
-    statusEl.textContent = '已就绪';
-    statusEl.className = 'status-bar online';
+    const last = localStorage.getItem('lastChannel');
+    if (last) document.getElementById('channelInput').value = last;
 </script>
 </body>
 </html>
