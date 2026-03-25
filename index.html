@@ -161,9 +161,12 @@
     <div class="log-entry">系统就绪...</div>
 </div>
 
+<!-- Pusher SDK -->
+<script src="https://js.pusher.com/8.2.0/pusher.min.js"></script>
 <script>
-    // ===== 配置 =====
-    const SIGNAL_SERVER = 'wss://walkie-signal.508002830.workers.dev/';
+    // ===== Pusher 配置 =====
+    const PUSHER_KEY = '8e6caec8bd3839137a9b';
+    const PUSHER_CLUSTER = 'ap3';
 
     // ===== 加密工具 =====
     const Crypto = {
@@ -180,30 +183,34 @@
         },
         async hashChannel(name) {
             const enc = new TextEncoder();
-            const hash = await window.crypto.subtle.digest('SHA-256', enc.encode(name + '_channel'));
-            return Array.from(new Uint8Array(hash)).slice(0, 12).map(b => b.toString(16).padStart(2,'0')).join('');
+            const hash = await window.crypto.subtle.digest('SHA-256', enc.encode(name + '_ch'));
+            return 'ch-' + Array.from(new Uint8Array(hash)).slice(0, 8).map(b => b.toString(16).padStart(2,'0')).join('');
         },
-        async encrypt(key, data) {
+        async encrypt(key, base64Audio) {
+            const enc = new TextEncoder();
+            const data = enc.encode(base64Audio);
             const iv = window.crypto.getRandomValues(new Uint8Array(12));
             const encrypted = await window.crypto.subtle.encrypt({ name: 'AES-GCM', iv }, key, data);
-            const result = new Uint8Array(12 + encrypted.byteLength);
-            result.set(iv, 0);
-            result.set(new Uint8Array(encrypted), 12);
-            return result.buffer;
+            const ivB64 = btoa(String.fromCharCode(...iv));
+            const encB64 = btoa(String.fromCharCode(...new Uint8Array(encrypted)));
+            return ivB64 + '.' + encB64;
         },
-        async decrypt(key, data) {
-            const iv = new Uint8Array(data, 0, 12);
-            const encrypted = new Uint8Array(data, 12);
-            return window.crypto.subtle.decrypt({ name: 'AES-GCM', iv }, key, encrypted);
+        async decrypt(key, encryptedStr) {
+            const [ivB64, encB64] = encryptedStr.split('.');
+            const iv = Uint8Array.from(atob(ivB64), c => c.charCodeAt(0));
+            const enc = Uint8Array.from(atob(encB64), c => c.charCodeAt(0));
+            const decrypted = await window.crypto.subtle.decrypt({ name: 'AES-GCM', iv }, key, enc);
+            return new TextDecoder().decode(decrypted);
         }
     };
 
     // ===== 状态 =====
-    let ws = null;
-    let myId = 'user_' + Math.random().toString(36).substr(2, 10);
+    let pusher = null;
+    let channel = null;
+    let myId = 'user_' + Math.random().toString(36).substr(2, 8);
     let currentChannel = '';
     let cryptoKey = null;
-    let peers = new Map(); // peerId -> RTCPeerConnection
+    let peers = new Map();
     let localStream = null;
     let isTalking = false;
     let mediaRecorder = null;
@@ -220,7 +227,6 @@
     const encryptIndicator = document.getElementById('encryptIndicator');
     const logSection = document.getElementById('logSection');
 
-    // ===== 日志 =====
     function addLog(msg, type = '') {
         const entry = document.createElement('div');
         entry.className = 'log-entry ' + type;
@@ -238,82 +244,6 @@
         setTimeout(() => t.remove(), 2500);
     }
 
-    // ===== WebSocket 信令 =====
-    function connectSignal(onReady) {
-        statusEl.textContent = '连接服务器中...';
-        ws = new WebSocket(SIGNAL_SERVER);
-
-        ws.onopen = () => {
-            addLog('已连接到信令服务器', 'join');
-            statusEl.textContent = '已就绪';
-            statusEl.className = 'status-bar online';
-            if (onReady) onReady();
-        };
-
-        ws.onmessage = async (event) => {
-            try {
-                const msg = JSON.parse(event.data);
-                await handleSignal(msg);
-            } catch(e) {}
-        };
-
-        ws.onclose = () => {
-            addLog('信令服务器断开，3秒后重连...', 'error');
-            statusEl.textContent = '重连中...';
-            statusEl.className = 'status-bar';
-            setTimeout(() => connectSignal(), 3000);
-        };
-
-        ws.onerror = () => {
-            addLog('连接错误', 'error');
-        };
-    }
-
-    function sendSignal(msg) {
-        if (ws && ws.readyState === WebSocket.OPEN) {
-            ws.send(JSON.stringify(msg));
-        }
-    }
-
-    // ===== 处理信令 =====
-    async function handleSignal(msg) {
-        switch(msg.type) {
-            case 'peers':
-                // 收到频道内已有用户列表，主动发起连接
-                addLog(`频道内已有 ${msg.peers.length} 人`, 'join');
-                for (const peerId of msg.peers) {
-                    await createOffer(peerId);
-                }
-                updateCount();
-                break;
-
-            case 'peer_joined':
-                // 有新用户加入，等待对方发起连接
-                addLog('新用户加入频道', 'join');
-                updateCount();
-                break;
-
-            case 'peer_left':
-                // 用户离开
-                if (peers.has(msg.peerId)) {
-                    peers.get(msg.peerId).close();
-                    peers.delete(msg.peerId);
-                }
-                addLog('用户离开频道', 'leave');
-                updateCount();
-                break;
-
-            case 'count':
-                userCountEl.textContent = msg.count;
-                break;
-
-            case 'signal':
-                // WebRTC 信令转发
-                await handleWebRTCSignal(msg.from, msg.signal);
-                break;
-        }
-    }
-
     // ===== WebRTC =====
     const RTC_CONFIG = {
         iceServers: [
@@ -324,49 +254,46 @@
     };
 
     function createPeerConnection(peerId) {
+        if (peers.has(peerId)) return peers.get(peerId);
+
         const pc = new RTCPeerConnection(RTC_CONFIG);
         peers.set(peerId, pc);
 
-        // 添加本地音频流
         if (localStream) {
             localStream.getTracks().forEach(track => pc.addTrack(track, localStream));
         }
 
-        // 收到远程音频
         pc.ontrack = (event) => {
-            addLog('收到对方音频流', 'join');
+            addLog('收到对方音频', 'join');
             const audio = new Audio();
             audio.srcObject = event.streams[0];
             audio.play().catch(() => {});
-
             talkBtn.classList.add('receiving-audio');
             statusEl.textContent = '🔵 对方正在说话...';
             statusEl.className = 'status-bar receiving';
-
-            event.streams[0].getTracks()[0].onended = () => {
-                talkBtn.classList.remove('receiving-audio');
-                if (!isTalking) {
-                    statusEl.textContent = '📻 ' + currentChannel + ' · 空闲';
-                    statusEl.className = 'status-bar online';
-                }
-            };
         };
 
-        // ICE 候选
         pc.onicecandidate = (event) => {
             if (event.candidate) {
-                sendSignal({
-                    type: 'signal',
+                sendPusher('client-signal', {
                     to: peerId,
+                    from: myId,
                     signal: { type: 'candidate', candidate: event.candidate }
                 });
             }
         };
 
         pc.onconnectionstatechange = () => {
-            addLog('连接状态: ' + pc.connectionState, pc.connectionState === 'connected' ? 'join' : '');
             if (pc.connectionState === 'connected') {
+                addLog('✅ 连接成功！', 'join');
                 showToast('✅ 已与对方建立连接！');
+                updateCount();
+                // 连接成功后取消静音
+                if (!isTalking && localStream) {
+                    localStream.getAudioTracks().forEach(t => t.enabled = false);
+                }
+            } else if (pc.connectionState === 'disconnected' || pc.connectionState === 'failed') {
+                peers.delete(peerId);
                 updateCount();
             }
         };
@@ -378,12 +305,12 @@
         const pc = createPeerConnection(peerId);
         const offer = await pc.createOffer({ offerToReceiveAudio: true });
         await pc.setLocalDescription(offer);
-        sendSignal({
-            type: 'signal',
+        sendPusher('client-signal', {
             to: peerId,
+            from: myId,
             signal: { type: 'offer', sdp: offer }
         });
-        addLog('发起连接请求...', '');
+        addLog('发起连接...', '');
     }
 
     async function handleWebRTCSignal(fromId, signal) {
@@ -392,41 +319,49 @@
             await pc.setRemoteDescription(new RTCSessionDescription(signal.sdp));
             const answer = await pc.createAnswer();
             await pc.setLocalDescription(answer);
-            sendSignal({
-                type: 'signal',
+            sendPusher('client-signal', {
                 to: fromId,
+                from: myId,
                 signal: { type: 'answer', sdp: answer }
             });
-            addLog('接受连接请求', '');
         } else if (signal.type === 'answer') {
             const pc = peers.get(fromId);
             if (pc) await pc.setRemoteDescription(new RTCSessionDescription(signal.sdp));
         } else if (signal.type === 'candidate') {
             const pc = peers.get(fromId);
-            if (pc) await pc.addIceCandidate(new RTCIceCandidate(signal.candidate));
+            if (pc && pc.remoteDescription) {
+                await pc.addIceCandidate(new RTCIceCandidate(signal.candidate));
+            }
         }
     }
 
     function updateCount() {
-        const connected = Array.from(peers.values()).filter(pc => pc.connectionState === 'connected').length;
+        const connected = Array.from(peers.values()).filter(pc =>
+            pc.connectionState === 'connected' || pc.connectionState === 'connecting'
+        ).length;
         userCountEl.textContent = connected + 1;
+    }
+
+    // ===== Pusher 信令 =====
+    function sendPusher(event, data) {
+        if (channel) {
+            channel.trigger(event, data);
+        }
     }
 
     // ===== 加入频道 =====
     async function joinChannel() {
-        const channel = document.getElementById('channelInput').value.trim();
-        if (!channel) { showToast('请输入频道号'); return; }
-        if (channel.length < 4) { showToast('频道号至少4位'); return; }
+        const chName = document.getElementById('channelInput').value.trim();
+        if (!chName) { showToast('请输入频道号'); return; }
+        if (chName.length < 4) { showToast('频道号至少4位'); return; }
 
-        // 保存频道号到本地
-        localStorage.setItem('lastChannel', channel);
-
+        localStorage.setItem('lastChannel', chName);
         showToast('正在加入...');
         addLog('初始化加密...', 'secure');
 
-        cryptoKey = await Crypto.deriveKey(channel);
-        const hashedChannel = await Crypto.hashChannel(channel);
-        currentChannel = channel;
+        cryptoKey = await Crypto.deriveKey(chName);
+        const hashedCh = await Crypto.hashChannel(chName);
+        currentChannel = chName;
 
         addLog('🔒 AES-256 加密就绪', 'secure');
 
@@ -436,6 +371,8 @@
                 audio: { echoCancellation: true, noiseSuppression: true, sampleRate: 16000 },
                 video: false
             });
+            // 默认静音，按住才说话
+            localStream.getAudioTracks().forEach(t => t.enabled = false);
             addLog('麦克风就绪', '');
         } catch(e) {
             showToast('❌ 请允许麦克风权限');
@@ -443,27 +380,70 @@
             return;
         }
 
-        // 连接信令服务器并加入频道
-        const doJoin = () => {
-            sendSignal({ type: 'join', channel: hashedChannel, peerId: myId });
+        // 初始化 Pusher
+        pusher = new Pusher(PUSHER_KEY, {
+            cluster: PUSHER_CLUSTER,
+            forceTLS: true
+        });
 
-            joinSection.classList.add('hidden');
-            channelInfo.classList.add('show');
-            channelNameEl.textContent = '📻 ' + channel;
-            talkBtn.disabled = false;
-            talkHint.textContent = '按住大按钮说话 · 松开停止\nPC端可按空格键';
-            encryptIndicator.style.display = 'flex';
-            statusEl.textContent = '📻 ' + channel + ' · 空闲';
+        // 订阅频道（用哈希后的频道名）
+        channel = pusher.subscribe('presence-' + hashedCh);
+
+        channel.bind('pusher:subscription_succeeded', (members) => {
+            addLog('已加入频道，在线: ' + members.count + ' 人', 'join');
+            userCountEl.textContent = members.count;
+
+            // 向频道内其他人发起连接
+            members.each((member) => {
+                if (member.id !== myId) {
+                    createOffer(member.id);
+                }
+            });
+        });
+
+        channel.bind('pusher:member_added', (member) => {
+            addLog('新用户加入', 'join');
+            updateCount();
+        });
+
+        channel.bind('pusher:member_removed', (member) => {
+            addLog('用户离开', 'leave');
+            if (peers.has(member.id)) {
+                peers.get(member.id).close();
+                peers.delete(member.id);
+            }
+            updateCount();
+        });
+
+        // 接收 WebRTC 信令
+        channel.bind('client-signal', async (data) => {
+            if (data.to === myId) {
+                await handleWebRTCSignal(data.from, data.signal);
+            }
+        });
+
+        channel.bind('pusher:subscription_error', (err) => {
+            addLog('频道订阅失败: ' + JSON.stringify(err), 'error');
+        });
+
+        pusher.connection.bind('connected', () => {
+            statusEl.textContent = '📻 ' + chName + ' · 空闲';
             statusEl.className = 'status-bar online';
-            addLog('已加入频道: ' + channel, 'join');
-            showToast('✅ 已加入: ' + channel);
-        };
+        });
 
-        if (!ws || ws.readyState !== WebSocket.OPEN) {
-            connectSignal(doJoin);
-        } else {
-            doJoin();
-        }
+        pusher.connection.bind('error', (err) => {
+            addLog('Pusher 连接错误', 'error');
+        });
+
+        // 更新 UI
+        joinSection.classList.add('hidden');
+        channelInfo.classList.add('show');
+        channelNameEl.textContent = '📻 ' + chName;
+        talkBtn.disabled = false;
+        talkHint.textContent = '按住大按钮说话 · 松开停止\nPC端可按空格键';
+        encryptIndicator.style.display = 'flex';
+        statusEl.textContent = '📻 ' + chName + ' · 连接中...';
+        statusEl.className = 'status-bar online';
     }
 
     // ===== 离开频道 =====
@@ -472,6 +452,9 @@
 
         peers.forEach(pc => pc.close());
         peers.clear();
+
+        if (channel) { pusher.unsubscribe(channel.name); channel = null; }
+        if (pusher) { pusher.disconnect(); pusher = null; }
 
         if (localStream) {
             localStream.getTracks().forEach(t => t.stop());
@@ -490,14 +473,11 @@
         showToast('已离开频道');
     }
 
-    // ===== 说话逻辑 =====
+    // ===== 说话 =====
     function startTalking() {
         if (isTalking || !localStream || talkBtn.disabled) return;
         isTalking = true;
-
-        // 取消静音（WebRTC 通过 track enabled 控制）
-        localStream.getAudioTracks().forEach(track => { track.enabled = true; });
-
+        localStream.getAudioTracks().forEach(t => t.enabled = true);
         talkBtn.classList.add('active');
         talkBtn.querySelector('.icon').textContent = '🔴';
         talkBtn.querySelector('.label').textContent = '正在说话...';
@@ -509,10 +489,7 @@
     function stopTalking() {
         if (!isTalking) return;
         isTalking = false;
-
-        // 静音（不断开连接，只是静音）
-        localStream.getAudioTracks().forEach(track => { track.enabled = false; });
-
+        localStream.getAudioTracks().forEach(t => t.enabled = false);
         talkBtn.classList.remove('active');
         talkBtn.querySelector('.icon').textContent = '🎙️';
         talkBtn.querySelector('.label').textContent = '按住说话';
@@ -546,12 +523,12 @@
         if (e.key === 'Enter') joinChannel();
     });
 
-    // 自动填入上次的频道号
+    // 自动填入上次频道号
     const lastChannel = localStorage.getItem('lastChannel');
     if (lastChannel) document.getElementById('channelInput').value = lastChannel;
 
-    // ===== 启动 =====
-    connectSignal();
+    statusEl.textContent = '已就绪';
+    statusEl.className = 'status-bar online';
 </script>
 </body>
 </html>
