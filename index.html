@@ -166,7 +166,6 @@
             align-items: center;
             justify-content: center;
             gap: 24px;
-            border: 1px solid rgba(255,255,255,0.1);
         }
 
         .walkie-talkie {
@@ -228,8 +227,6 @@
         .chat-panel {
             flex: 1;
             background: rgba(0,0,0,0.4);
-            border-radius: 0;
-            border: none;
             display: flex;
             flex-direction: column;
             overflow: hidden;
@@ -538,13 +535,12 @@
         const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhvZ3RsZmh6YXB0am1kb2ZpcnBjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQ0Mzk0MDgsImV4cCI6MjA5MDAxNTQwOH0.uWntVROe6VLzr6Uoqz57HoQ48NgmqJFy-UgE0sZ1ezI';
         const POCKETBASE_URL = 'http://127.0.0.1:8090';
 
-        const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY, {
-            auth: { persistSession: false, autoRefreshToken: false, detectSessionInUrl: false }
-        });
+        const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
         let myId = 'u_' + Math.random().toString(36).substr(2, 8);
         let myName = '用户' + myId.substr(2, 4);
         let currentRoom = null;
+        let sbChannel = null;
         let peers = new Map();
         let localStream = null;
         let isTalking = false;
@@ -552,7 +548,6 @@
         let messageCache = new Map();
         let pollInterval = null;
         let joinTime = null;
-        let pollUsersInterval = null;
 
         const RTC_CONFIG = {
             iceServers: [
@@ -562,7 +557,6 @@
             ]
         };
 
-        // 进入房间
         async function joinRoom() {
             const username = document.getElementById('username').value.trim();
             const room = document.getElementById('room').value.trim();
@@ -576,7 +570,6 @@
             currentRoom = room;
             joinTime = Date.now();
 
-            // 获取麦克风
             try {
                 localStream = await navigator.mediaDevices.getUserMedia({
                     audio: { echoCancellation: true, noiseSuppression: true },
@@ -588,17 +581,49 @@
                 return;
             }
 
-            // 哈希房间名
             const chHash = await hashChannel(room, '');
 
-            // 用 REST API 轮询而不是 Realtime
-            pollForSignals(chHash);
+            sbChannel = sb.channel(chHash, { config: { broadcast: { self: false } } });
 
-            document.getElementById('joinSection').classList.add('hidden');
-            document.getElementById('mainContent').classList.add('show');
-            updateOnlineCount();
-            startListening();
-            startUserPolling();
+            sbChannel.on('broadcast', { event: 'signal' }, ({ payload }) => {
+                if (payload.to === myId) handleSignal(payload.from, payload.signal);
+            });
+
+            sbChannel.on('broadcast', { event: 'join' }, ({ payload }) => {
+                if (payload.from !== myId) {
+                    onlineUsers.set(payload.from, { name: payload.name });
+                    updateOnlineCount();
+                    makeOffer(payload.from);
+                }
+            });
+
+            sbChannel.on('broadcast', { event: 'here' }, ({ payload }) => {
+                if (payload.to === myId || !payload.to) {
+                    onlineUsers.set(payload.from, { name: payload.name });
+                    updateOnlineCount();
+                }
+            });
+
+            sbChannel.on('broadcast', { event: 'leave' }, ({ payload }) => {
+                if (payload.from !== myId) {
+                    onlineUsers.delete(payload.from);
+                    if (peers.has(payload.from)) { 
+                        peers.get(payload.from).close(); 
+                        peers.delete(payload.from); 
+                    }
+                    updateOnlineCount();
+                }
+            });
+
+            sbChannel.subscribe((status) => {
+                if (status === 'SUBSCRIBED') {
+                    broadcast('join', { name: myName });
+                    document.getElementById('joinSection').classList.add('hidden');
+                    document.getElementById('mainContent').classList.add('show');
+                    updateOnlineCount();
+                    startListening();
+                }
+            });
         }
 
         async function hashChannel(ch, pw) {
@@ -607,55 +632,12 @@
             return 'wt_' + Array.from(new Uint8Array(hash)).slice(0,10).map(b=>b.toString(16).padStart(2,'0')).join('');
         }
 
-        // 用 REST API 轮询信令
-        async function pollForSignals(chHash) {
-            setInterval(async () => {
-                try {
-                    const response = await fetch(
-                        `${SUPABASE_URL}/rest/v1/messages?channel_id=eq.${chHash}&select=*`,
-                        {
-                            headers: {
-                                'apikey': SUPABASE_KEY,
-                                'Authorization': `Bearer ${SUPABASE_KEY}`
-                            }
-                        }
-                    );
-                    
-                    if (response.ok) {
-                        const data = await response.json();
-                        data.forEach(msg => {
-                            if (msg.to_id === myId && msg.type === 'signal') {
-                                handleSignal(msg.from_id, JSON.parse(msg.payload));
-                            }
-                        });
-                    }
-                } catch (error) {
-                    console.log('轮询信令失败:', error);
-                }
-            }, 500);
+        function broadcast(event, payload) {
+            sbChannel?.send({ type: 'broadcast', event, payload: { from: myId, ...payload } });
         }
 
-        // 发送信令
-        async function sendSignal(to, signal, chHash) {
-            try {
-                await fetch(`${SUPABASE_URL}/rest/v1/messages`, {
-                    method: 'POST',
-                    headers: {
-                        'apikey': SUPABASE_KEY,
-                        'Authorization': `Bearer ${SUPABASE_KEY}`,
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({
-                        channel_id: chHash,
-                        from_id: myId,
-                        to_id: to,
-                        type: 'signal',
-                        payload: JSON.stringify(signal)
-                    })
-                });
-            } catch (error) {
-                console.log('发送信令失败:', error);
-            }
+        function sendSignal(to, signal) {
+            sbChannel?.send({ type: 'broadcast', event: 'signal', payload: { from: myId, to, signal } });
         }
 
         function createPC(peerId) {
@@ -676,10 +658,7 @@
             };
 
             pc.onicecandidate = (e) => {
-                if (e.candidate) {
-                    const chHash = hashChannelSync(currentRoom, '');
-                    sendSignal(peerId, { type: 'candidate', candidate: e.candidate }, chHash);
-                }
+                if (e.candidate) sendSignal(peerId, { type: 'candidate', candidate: e.candidate });
             };
 
             pc.onconnectionstatechange = () => {
@@ -696,8 +675,7 @@
                 await pc.setRemoteDescription(new RTCSessionDescription(signal.sdp));
                 const answer = await pc.createAnswer();
                 await pc.setLocalDescription(answer);
-                const chHash = await hashChannel(currentRoom, '');
-                sendSignal(from, { type: 'answer', sdp: answer }, chHash);
+                sendSignal(from, { type: 'answer', sdp: answer });
             } else if (signal.type === 'answer') {
                 const pc = peers.get(from);
                 if (pc) await pc.setRemoteDescription(new RTCSessionDescription(signal.sdp));
@@ -711,22 +689,9 @@
             const pc = createPC(peerId);
             const offer = await pc.createOffer({ offerToReceiveAudio: true });
             await pc.setLocalDescription(offer);
-            const chHash = await hashChannel(currentRoom, '');
-            sendSignal(peerId, { type: 'offer', sdp: offer }, chHash);
+            sendSignal(peerId, { type: 'offer', sdp: offer });
         }
 
-        function hashChannelSync(ch, pw) {
-            return 'wt_' + btoa(ch + '_' + pw + '_wt').substring(0, 10);
-        }
-
-        // 轮询在线用户
-        function startUserPolling() {
-            pollUsersInterval = setInterval(() => {
-                updateOnlineCount();
-            }, 1000);
-        }
-
-        // 发送消息
         async function sendMessage() {
             const input = document.getElementById('messageInput');
             const content = input.value.trim();
@@ -763,7 +728,6 @@
             }
         }
 
-        // 显示消息
         function displayMessage(user, content, isOwn = false, timestamp = null) {
             const msgId = `${user}-${content}-${timestamp || Date.now()}`;
             
@@ -798,7 +762,6 @@
             }, 29000);
         }
 
-        // 删除消息
         async function deleteMessage(recordId) {
             try {
                 await fetch(`${POCKETBASE_URL}/api/collections/messages/records/${recordId}`, {
@@ -809,7 +772,6 @@
             }
         }
 
-        // 监听消息
         async function startListening() {
             try {
                 const response = await fetch(
@@ -852,14 +814,12 @@
             }, 2000);
         }
 
-        // 更新在线人数
         function updateOnlineCount() {
             const count = onlineUsers.size + 1;
             document.getElementById('onlineCount').textContent = count;
             document.getElementById('chatOnlineCount').textContent = count;
         }
 
-        // PTT 按钮
         function startPTT() {
             if (!localStream) return;
             isTalking = true;
@@ -876,21 +836,20 @@
             document.getElementById('screen').textContent = '就绪';
         }
 
-        // 回车发送
         function handleKeyPress(event) {
             if (event.key === 'Enter') {
                 sendMessage();
             }
         }
 
-        // 离开房间
         function leaveRoom() {
             if (pollInterval) clearInterval(pollInterval);
-            if (pollUsersInterval) clearInterval(pollUsersInterval);
             if (isTalking) stopPTT();
+            broadcast('leave', {});
             peers.forEach(pc => pc.close()); 
             peers.clear();
             onlineUsers.clear();
+            if (sbChannel) { sb.removeChannel(sbChannel); sbChannel = null; }
             if (localStream) { localStream.getTracks().forEach(t => t.stop()); localStream = null; }
             currentRoom = null;
 
@@ -904,14 +863,11 @@
             updateOnlineCount();
         }
 
-        // 页面卸载时清理
         window.addEventListener('beforeunload', () => {
             if (pollInterval) clearInterval(pollInterval);
-            if (pollUsersInterval) clearInterval(pollUsersInterval);
             if (currentRoom) leaveRoom();
         });
 
-        // 初始化
         document.getElementById('pttBtn').disabled = true;
     </script>
 </body>
