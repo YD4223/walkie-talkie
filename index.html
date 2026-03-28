@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <title>零距离 - 对讲机 + 聊天</title>
+    <title>0️⃣ 零距离 - 对讲机 + 聊天</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
         
@@ -267,12 +267,25 @@
             font-weight: 600;
         }
 
-        .online-count {
-            background: rgba(0,212,255,0.2);
-            padding: 5px 12px;
-            border-radius: 20px;
-            font-size: 0.85rem;
-            color: #00d4ff;
+        .header-right {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .btn-leave-room {
+            background: rgba(255,100,100,0.2);
+            color: #ff6b6b;
+            border: 1px solid rgba(255,100,100,0.3);
+            padding: 6px 12px;
+            border-radius: 6px;
+            font-size: 0.8rem;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .btn-leave-room:hover {
+            background: rgba(255,100,100,0.3);
         }
 
         .chat-messages {
@@ -404,6 +417,29 @@
             .message {
                 max-width: 85%;
             }
+
+            .chat-header {
+                padding: 12px;
+            }
+
+            .chat-messages {
+                padding: 12px;
+            }
+
+            .chat-input-area {
+                padding: 8px;
+                gap: 6px;
+            }
+
+            .chat-input-area input {
+                padding: 8px 10px;
+                font-size: 0.85rem;
+            }
+
+            .chat-input-area button {
+                padding: 8px 12px;
+                font-size: 0.85rem;
+            }
         }
 
         ::-webkit-scrollbar {
@@ -479,7 +515,10 @@
             <div class="chat-panel">
                 <div class="chat-header">
                     <h2>💬 聊天</h2>
-                    <div class="online-count">在线 <span id="chatOnlineCount">0</span> 人</div>
+                    <div class="header-right">
+                        <div class="online-count">在线 <span id="chatOnlineCount">0</span> 人</div>
+                        <button class="btn-leave-room" onclick="leaveRoom()">离开</button>
+                    </div>
                 </div>
                 <div class="chat-messages" id="chatMessages"></div>
                 <div class="chat-input-area">
@@ -520,6 +559,7 @@
             document.getElementById('mainContent').classList.add('show');
 
             updateOnlineCount();
+            startOnlineSync();
             startListening();
         }
 
@@ -659,6 +699,13 @@
             document.getElementById('chatOnlineCount').textContent = onlineUsers.size;
         }
 
+        // 定期更新在线人数（模拟其他用户进入）
+        function startOnlineSync() {
+            setInterval(() => {
+                updateOnlineCount();
+            }, 1000);
+        }
+
         // PTT 按钮
         function startPTT() {
             document.getElementById('pttBtn').style.background = 'linear-gradient(135deg, #cc0000, #ff0000)';
@@ -684,6 +731,23 @@
                 onlineUsers.delete(currentUser);
             }
         });
+
+        // 离开房间
+        function leaveRoom() {
+            if (pollInterval) clearInterval(pollInterval);
+            currentUser = null;
+            currentRoom = null;
+            joinTime = null;
+            onlineUsers.clear();
+            messageCache.clear();
+
+            document.getElementById('mainContent').classList.remove('show');
+            document.getElementById('joinSection').classList.remove('hidden');
+            document.getElementById('username').value = '';
+            document.getElementById('room').value = 'lobby';
+            document.getElementById('messageInput').value = '';
+            document.getElementById('chatMessages').innerHTML = '';
+        }
     </script>
 </body>
 </html>
