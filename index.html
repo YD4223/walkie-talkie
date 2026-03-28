@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <title>📻 对讲机</title>
+    <title>零距离 - 对讲机 + 聊天</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
         
@@ -19,7 +19,6 @@
             overflow: hidden;
         }
 
-        /* 动态背景 */
         .bg-stars {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background: radial-gradient(ellipse at 20% 50%, rgba(120,40,200,0.15) 0%, transparent 50%),
@@ -31,7 +30,6 @@
 
         .container { position: relative; z-index: 1; display: flex; flex-direction: column; min-height: 100vh; }
 
-        /* 顶部 */
         header {
             padding: 18px 20px 14px;
             text-align: center;
@@ -39,6 +37,27 @@
             border-bottom: 1px solid rgba(255,255,255,0.08);
             backdrop-filter: blur(20px);
         }
+
+        .header-content {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+        }
+
+        .logo {
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(135deg, #00d4ff, #7c3aed);
+            border-radius: 10px;
+            font-size: 24px;
+            font-weight: 700;
+            box-shadow: 0 0 20px rgba(0,212,255,0.4);
+        }
+
         header h1 {
             font-size: 1.5rem;
             font-weight: 700;
@@ -47,17 +66,30 @@
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
         }
-        .status-bar { margin-top: 5px; font-size: 0.8rem; color: #555; display: flex; align-items: center; justify-content: center; gap: 6px; }
-        .status-dot { width: 7px; height: 7px; border-radius: 50%; background: #555; }
-        .status-bar.online .status-dot { background: #4ade80; box-shadow: 0 0 8px #4ade80; }
-        .status-bar.online .status-text { color: #4ade80; }
-        .status-bar.speaking .status-dot { background: #f87171; box-shadow: 0 0 8px #f87171; animation: blink 0.5s infinite; }
-        .status-bar.speaking .status-text { color: #f87171; }
-        .status-bar.receiving .status-dot { background: #60a5fa; box-shadow: 0 0 8px #60a5fa; animation: blink 0.5s infinite; }
-        .status-bar.receiving .status-text { color: #60a5fa; }
-        @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.3} }
 
-        /* 加入区域 */
+        .status-bar { 
+            margin-top: 5px; 
+            font-size: 0.8rem; 
+            color: #555; 
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
+            gap: 6px; 
+        }
+        .status-dot { 
+            width: 7px; 
+            height: 7px; 
+            border-radius: 50%; 
+            background: #555; 
+        }
+        .status-bar.online .status-dot { 
+            background: #4ade80; 
+            box-shadow: 0 0 8px #4ade80; 
+        }
+        .status-bar.online .status-text { 
+            color: #4ade80; 
+        }
+
         .join-section {
             padding: 20px;
             background: rgba(0,0,0,0.3);
@@ -65,590 +97,593 @@
             backdrop-filter: blur(10px);
         }
         .join-section.hidden { display: none; }
-        .join-form { max-width: 420px; margin: 0 auto; display: flex; flex-direction: column; gap: 12px; }
-        .input-group { display: flex; gap: 10px; }
-        .input-wrap { flex: 1; position: relative; }
-        .input-wrap .input-icon { position: absolute; left: 14px; top: 50%; transform: translateY(-50%); font-size: 1rem; }
+        
+        .join-form { 
+            max-width: 420px; 
+            margin: 0 auto; 
+            display: flex; 
+            flex-direction: column; 
+            gap: 12px; 
+        }
+        
+        .input-group { 
+            display: flex; 
+            gap: 10px; 
+        }
+        
+        .input-wrap { 
+            flex: 1; 
+            position: relative; 
+        }
+        
+        .input-wrap .input-icon { 
+            position: absolute; 
+            left: 14px; 
+            top: 50%; 
+            transform: translateY(-50%); 
+            font-size: 1rem; 
+        }
+        
         .input-wrap input {
-            width: 100%; padding: 13px 16px 13px 40px;
+            width: 100%; 
+            padding: 13px 16px 13px 40px;
             border: 1.5px solid rgba(255,255,255,0.1);
             border-radius: 12px;
             background: rgba(255,255,255,0.06);
-            color: #fff; font-size: 0.95rem; outline: none;
+            color: #fff; 
+            font-size: 0.95rem; 
+            outline: none;
             transition: all 0.3s;
         }
-        .input-wrap input:focus { border-color: #00d4ff; background: rgba(0,212,255,0.05); }
-        .input-wrap input::placeholder { color: #444; }
+        
+        .input-wrap input:focus { 
+            border-color: #00d4ff; 
+            background: rgba(0,212,255,0.05); 
+        }
+        
+        .input-wrap input::placeholder { 
+            color: #444; 
+        }
+        
         .btn-join {
             padding: 13px 22px;
             background: linear-gradient(135deg, #00d4ff, #7c3aed);
-            color: #fff; border: none; border-radius: 12px;
-            font-size: 0.95rem; font-weight: 700; cursor: pointer;
-            transition: all 0.2s; white-space: nowrap;
+            color: #fff; 
+            border: none; 
+            border-radius: 12px;
+            font-size: 0.95rem; 
+            font-weight: 700; 
+            cursor: pointer;
+            transition: all 0.2s;
             box-shadow: 0 4px 20px rgba(0,212,255,0.3);
         }
-        .btn-join:hover { transform: translateY(-1px); box-shadow: 0 6px 25px rgba(0,212,255,0.4); }
-        .btn-join:active { transform: scale(0.97); }
-
-        /* 频道信息栏 */
-        .channel-bar {
-            display: none; padding: 12px 20px;
-            background: rgba(0,212,255,0.06);
-            border-bottom: 1px solid rgba(0,212,255,0.12);
-            align-items: center; justify-content: space-between;
-            backdrop-filter: blur(10px);
-        }
-        .channel-bar.show { display: flex; }
-        .channel-bar-left { display: flex; align-items: center; gap: 10px; }
-        .channel-badge {
-            background: linear-gradient(135deg, rgba(0,212,255,0.2), rgba(124,58,237,0.2));
-            border: 1px solid rgba(0,212,255,0.3);
-            padding: 4px 12px; border-radius: 20px;
-            font-size: 0.82rem; color: #00d4ff; font-weight: 600;
-        }
-        .lock-badge {
-            background: rgba(74,222,128,0.15);
-            border: 1px solid rgba(74,222,128,0.3);
-            padding: 3px 8px; border-radius: 10px;
-            font-size: 0.72rem; color: #4ade80;
-        }
-        .btn-leave {
-            background: rgba(255,100,100,0.12); color: #f87171;
-            border: 1px solid rgba(255,100,100,0.25);
-            padding: 7px 14px; border-radius: 8px;
-            font-size: 0.82rem; cursor: pointer; transition: all 0.2s;
-        }
-        .btn-leave:hover { background: rgba(255,100,100,0.2); }
-
-        /* 在线用户列表 */
-        .users-bar {
-            display: none; padding: 10px 20px;
-            background: rgba(0,0,0,0.2);
-            border-bottom: 1px solid rgba(255,255,255,0.05);
-            overflow-x: auto;
-        }
-        .users-bar.show { display: flex; align-items: center; gap: 8px; }
-        .users-bar::-webkit-scrollbar { display: none; }
-        .users-label { font-size: 0.75rem; color: #555; white-space: nowrap; }
-        .user-avatar {
-            width: 32px; height: 32px; border-radius: 50%;
-            display: flex; align-items: center; justify-content: center;
-            font-size: 0.75rem; font-weight: 700;
-            border: 2px solid rgba(255,255,255,0.1);
-            flex-shrink: 0; position: relative;
-        }
-        .user-avatar.me { border-color: #00d4ff; }
-        .user-avatar.speaking-indicator::after {
-            content: ''; position: absolute; inset: -4px;
-            border-radius: 50%; border: 2px solid #f87171;
-            animation: speakRing 1s infinite;
-        }
-        @keyframes speakRing { 0%{opacity:1;transform:scale(1)} 100%{opacity:0;transform:scale(1.4)} }
-        .online-total { font-size: 0.75rem; color: #555; white-space: nowrap; margin-left: 4px; }
-
-        /* 对讲按钮区域 */
-        .talk-section {
-            flex: 1; display: flex; flex-direction: column;
-            align-items: center; justify-content: center; padding: 20px;
+        
+        .btn-join:hover { 
+            transform: translateY(-1px); 
+            box-shadow: 0 6px 25px rgba(0,212,255,0.4); 
         }
 
-        /* 音波动画 */
-        .wave-container {
-            position: relative; width: 260px; height: 260px;
-            display: flex; align-items: center; justify-content: center;
-            margin-bottom: 10px;
+        .main-content {
+            flex: 1;
+            display: none;
+            gap: 0;
+            padding: 0;
+            overflow: hidden;
         }
-        .wave-ring {
-            position: absolute; border-radius: 50%;
-            border: 2px solid rgba(0,212,255,0.2);
-            animation: waveExpand 2s ease-out infinite;
-        }
-        .wave-ring:nth-child(1) { width: 220px; height: 220px; animation-delay: 0s; }
-        .wave-ring:nth-child(2) { width: 240px; height: 240px; animation-delay: 0.5s; }
-        .wave-ring:nth-child(3) { width: 260px; height: 260px; animation-delay: 1s; }
-        @keyframes waveExpand {
-            0% { opacity: 0.6; transform: scale(0.8); }
-            100% { opacity: 0; transform: scale(1.1); }
-        }
-        .wave-ring.active { border-color: rgba(255,68,68,0.4); }
-        .wave-ring.receiving-wave { border-color: rgba(96,165,250,0.4); }
 
-        .talk-btn {
-            width: 180px; height: 180px; border-radius: 50%; border: none;
-            background: radial-gradient(circle at 35% 30%, #1e1e3a, #0d0d1f);
-            box-shadow:
-                0 0 0 3px rgba(255,255,255,0.04),
-                0 0 0 6px rgba(255,255,255,0.02),
-                0 10px 40px rgba(0,0,0,0.8),
-                inset 0 -6px 20px rgba(0,0,0,0.5),
-                inset 0 6px 20px rgba(255,255,255,0.03);
-            cursor: pointer; transition: all 0.15s;
-            display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px;
-            user-select: none; -webkit-user-select: none; touch-action: manipulation;
-            position: relative; z-index: 1;
+        .main-content.show { 
+            display: flex;
         }
-        .talk-btn .icon { font-size: 3.5rem; transition: all 0.15s; filter: drop-shadow(0 0 10px rgba(0,212,255,0.3)); }
-        .talk-btn .label { font-size: 0.88rem; color: #555; font-weight: 600; letter-spacing: 1px; }
-        .talk-btn:disabled { opacity: 0.35; cursor: not-allowed; }
-        .talk-btn.active {
-            background: radial-gradient(circle at 35% 30%, #3a0000, #1a0000);
-            box-shadow:
-                0 0 0 3px rgba(255,68,68,0.2),
-                0 0 0 6px rgba(255,68,68,0.1),
-                0 0 60px rgba(255,68,68,0.4),
-                0 10px 40px rgba(0,0,0,0.8),
-                inset 0 -6px 20px rgba(0,0,0,0.5);
+
+        .ptt-panel {
+            flex: 0 0 280px;
+            background: rgba(0,0,0,0.4);
+            border-right: 1px solid rgba(255,255,255,0.1);
+            padding: 24px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 24px;
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .walkie-talkie {
+            width: 140px;
+            height: 200px;
+            background: #1a1a2e;
+            border-radius: 15px;
+            border: 2px solid #00d4ff;
+            padding: 14px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            box-shadow: 0 0 20px rgba(0,212,255,0.3);
+        }
+
+        .screen {
+            width: 100%;
+            height: 60px;
+            background: #0a0;
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            font-weight: bold;
+            color: #000;
+            text-align: center;
+        }
+
+        .ptt-button {
+            width: 100%;
+            padding: 14px;
+            background: linear-gradient(135deg, #ff6b6b, #ff8787);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-weight: bold;
+            cursor: pointer;
+            font-size: 0.95rem;
+            transition: all 0.2s;
+            box-shadow: 0 4px 15px rgba(255,107,107,0.3);
+        }
+
+        .ptt-button:active {
+            background: linear-gradient(135deg, #cc0000, #ff0000);
             transform: scale(0.95);
         }
-        .talk-btn.active .icon { filter: drop-shadow(0 0 15px rgba(255,68,68,0.8)); }
-        .talk-btn.active .label { color: #ff8888; }
-        .talk-btn.receiving-glow {
-            box-shadow:
-                0 0 0 3px rgba(96,165,250,0.2),
-                0 0 60px rgba(96,165,250,0.3),
-                0 10px 40px rgba(0,0,0,0.8),
-                inset 0 -6px 20px rgba(0,0,0,0.5);
+
+        .status-info {
+            text-align: center;
+            font-size: 0.9rem;
+            color: #888;
         }
 
-        .talk-hint { font-size: 0.8rem; color: #444; text-align: center; line-height: 1.8; margin-top: 16px; }
-        .encrypt-badge {
-            display: none; align-items: center; gap: 6px;
-            margin-top: 12px; font-size: 0.75rem; color: #4ade80;
-            background: rgba(74,222,128,0.08); border: 1px solid rgba(74,222,128,0.2);
-            padding: 5px 14px; border-radius: 20px;
+        .status-info div {
+            margin: 4px 0;
         }
-        .encrypt-badge.show { display: flex; }
-        .encrypt-dot { width: 6px; height: 6px; border-radius: 50%; background: #4ade80; animation: pg 2s infinite; }
-        @keyframes pg { 0%,100%{opacity:1} 50%{opacity:0.3} }
 
-        /* 日志 */
-        .log-section {
-            background: rgba(0,0,0,0.6); border-top: 1px solid rgba(255,255,255,0.05);
-            padding: 10px 16px; max-height: 110px; overflow-y: auto;
-            backdrop-filter: blur(10px);
+        .chat-panel {
+            flex: 1;
+            background: rgba(0,0,0,0.4);
+            border-radius: 0;
+            border: none;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
         }
-        .log-section::-webkit-scrollbar { width: 3px; }
-        .log-section::-webkit-scrollbar-thumb { background: #222; border-radius: 2px; }
-        .log-entry { font-size: 0.72rem; padding: 2px 0; color: #444; }
-        .log-entry.ok { color: #4ade80; }
-        .log-entry.err { color: #f87171; }
-        .log-entry.info { color: #60a5fa; }
-        .log-entry.warn { color: #fbbf24; }
 
-        /* Toast */
-        .toast {
-            position: fixed; top: 75px; left: 50%; transform: translateX(-50%);
-            background: rgba(5,5,15,0.95); color: #fff;
-            padding: 10px 20px; border-radius: 12px; font-size: 0.85rem;
-            z-index: 1000; border: 1px solid rgba(255,255,255,0.08);
-            white-space: nowrap; animation: ti 0.3s ease;
-            backdrop-filter: blur(20px);
+        .chat-header {
+            padding: 15px;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
         }
-        @keyframes ti { from{opacity:0;transform:translateX(-50%) translateY(-12px)} to{opacity:1;transform:translateX(-50%) translateY(0)} }
 
-        /* 响应式 */
-        @media (max-width: 400px) {
-            .talk-btn { width: 160px; height: 160px; }
-            .talk-btn .icon { font-size: 3rem; }
-            .wave-container { width: 220px; height: 220px; }
-            .wave-ring:nth-child(1) { width: 190px; height: 190px; }
-            .wave-ring:nth-child(2) { width: 205px; height: 205px; }
-            .wave-ring:nth-child(3) { width: 220px; height: 220px; }
+        .chat-header h2 {
+            font-size: 1rem;
+            font-weight: 600;
+        }
+
+        .online-count {
+            background: rgba(0,212,255,0.2);
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            color: #00d4ff;
+        }
+
+        .chat-messages {
+            flex: 1;
+            overflow-y: auto;
+            padding: 15px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .message {
+            padding: 10px 14px;
+            border-radius: 10px;
+            max-width: 80%;
+            word-wrap: break-word;
+            font-size: 0.9rem;
+            animation: slideIn 0.3s ease;
+        }
+
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes fadeOut {
+            from { opacity: 1; }
+            to { opacity: 0; }
+        }
+
+        .message.own {
+            align-self: flex-end;
+            background: linear-gradient(135deg, #00d4ff, #7c3aed);
+            color: white;
+        }
+
+        .message.other {
+            align-self: flex-start;
+            background: rgba(255,255,255,0.1);
+            color: #fff;
+        }
+
+        .message-user {
+            font-size: 0.8rem;
+            opacity: 0.7;
+            margin-bottom: 3px;
+            font-weight: 500;
+        }
+
+        .chat-input-area {
+            padding: 12px;
+            border-top: 1px solid rgba(255,255,255,0.1);
+            display: flex;
+            gap: 8px;
+        }
+
+        .chat-input-area input {
+            flex: 1;
+            padding: 10px 14px;
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 20px;
+            background: rgba(255,255,255,0.06);
+            color: #fff;
+            font-size: 0.9rem;
+            outline: none;
+            transition: all 0.3s;
+        }
+
+        .chat-input-area input:focus {
+            border-color: #00d4ff;
+            background: rgba(0,212,255,0.05);
+        }
+
+        .chat-input-area input::placeholder {
+            color: #555;
+        }
+
+        .chat-input-area button {
+            padding: 10px 16px;
+            background: linear-gradient(135deg, #00d4ff, #7c3aed);
+            color: white;
+            border: none;
+            border-radius: 20px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 0.9rem;
+            transition: all 0.2s;
+        }
+
+        .chat-input-area button:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 15px rgba(0,212,255,0.3);
+        }
+
+        @media (max-width: 768px) {
+            .main-content {
+                flex-direction: column;
+            }
+
+            .ptt-panel {
+                flex: 0 0 auto;
+                border-right: none;
+                border-bottom: 1px solid rgba(255,255,255,0.1);
+                padding: 16px;
+                gap: 16px;
+            }
+
+            .walkie-talkie {
+                width: 100px;
+                height: 150px;
+                padding: 10px;
+            }
+
+            .screen {
+                height: 45px;
+                font-size: 10px;
+            }
+
+            .ptt-button {
+                padding: 12px;
+                font-size: 0.9rem;
+            }
+
+            .chat-panel {
+                flex: 1;
+                min-height: 300px;
+            }
+
+            .message {
+                max-width: 85%;
+            }
+        }
+
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: rgba(255,255,255,0.1);
+            border-radius: 3px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: rgba(255,255,255,0.2);
         }
     </style>
 </head>
 <body>
-<div class="bg-stars"></div>
-<div class="container">
-
-<header>
-    <h1>📻 对讲机</h1>
-    <div class="status-bar" id="status">
-        <div class="status-dot"></div>
-        <span class="status-text">就绪</span>
-    </div>
-</header>
-
-<!-- 加入区域 -->
-<div class="join-section" id="joinSection">
-    <div class="join-form">
-        <div class="input-group">
-            <div class="input-wrap">
-                <span class="input-icon">📻</span>
-                <input type="text" id="chInput" placeholder="频道号（如: family2026）" maxlength="20" autocomplete="off">
+    <div class="bg-stars"></div>
+    <div class="container">
+        <header>
+            <div class="header-content">
+                <div class="logo">0️⃣</div>
+                <h1>零距离</h1>
             </div>
-            <div class="input-wrap">
-                <span class="input-icon">🔒</span>
-                <input type="password" id="pwInput" placeholder="频道密码（可选）" maxlength="20" autocomplete="off">
+            <div class="status-bar online">
+                <div class="status-dot"></div>
+                <span class="status-text">系统就绪</span>
+            </div>
+        </header>
+
+        <!-- 加入区域 -->
+        <div class="join-section" id="joinSection">
+            <div class="join-form">
+                <div class="input-group">
+                    <div class="input-wrap">
+                        <span class="input-icon">👤</span>
+                        <input type="text" id="username" placeholder="输入昵称" maxlength="20">
+                    </div>
+                </div>
+
+                <div class="input-group">
+                    <div class="input-wrap">
+                        <span class="input-icon">🔐</span>
+                        <input type="text" id="room" placeholder="房间号" value="lobby" maxlength="20">
+                    </div>
+                    <button class="btn-join" onclick="joinRoom()">进入</button>
+                </div>
             </div>
         </div>
-        <button class="btn-join" onclick="joinChannel()">加入频道</button>
+
+        <!-- 主内容 -->
+        <div class="main-content" id="mainContent">
+            <!-- 对讲机面板 -->
+            <div class="ptt-panel">
+                <div class="walkie-talkie">
+                    <div class="screen" id="screen">就绪</div>
+                    <div style="flex: 1;"></div>
+                </div>
+                <button class="ptt-button" id="pttBtn" onmousedown="startPTT()" onmouseup="stopPTT()" ontouchstart="startPTT()" ontouchend="stopPTT()">
+                    按住说话
+                </button>
+                <div class="status-info">
+                    <div>在线: <span id="onlineCount">0</span> 人</div>
+                    <div style="font-size: 0.8rem; margin-top: 4px;">端对端加密</div>
+                </div>
+            </div>
+
+            <!-- 聊天面板 -->
+            <div class="chat-panel">
+                <div class="chat-header">
+                    <h2>💬 聊天</h2>
+                    <div class="online-count">在线 <span id="chatOnlineCount">0</span> 人</div>
+                </div>
+                <div class="chat-messages" id="chatMessages"></div>
+                <div class="chat-input-area">
+                    <input type="text" id="messageInput" placeholder="输入消息..." onkeypress="handleKeyPress(event)">
+                    <button onclick="sendMessage()">发送</button>
+                </div>
+            </div>
+        </div>
     </div>
-</div>
 
-<!-- 频道信息栏 -->
-<div class="channel-bar" id="channelBar">
-    <div class="channel-bar-left">
-        <div class="channel-badge" id="chBadge">📻 -</div>
-        <div class="lock-badge" id="lockBadge" style="display:none">🔒 加密</div>
-    </div>
-    <button class="btn-leave" onclick="leaveChannel()">离开</button>
-</div>
+    <script>
+        const POCKETBASE_URL = 'http://127.0.0.1:8090';
+        const MESSAGE_EXPIRE_TIME = 30000;
+        
+        let currentUser = null;
+        let currentRoom = null;
+        let onlineUsers = new Set();
+        let messageCache = new Map();
+        let pollInterval = null;
+        let joinTime = null;
 
-<!-- 在线用户 -->
-<div class="users-bar" id="usersBar">
-    <span class="users-label">在线：</span>
-    <div id="usersList"></div>
-    <span class="online-total" id="onlineTotal">1 人</span>
-</div>
+        // 进入房间
+        async function joinRoom() {
+            const username = document.getElementById('username').value.trim();
+            const room = document.getElementById('room').value.trim();
 
-<!-- 对讲按钮 -->
-<div class="talk-section">
-    <div class="wave-container">
-        <div class="wave-ring" id="wave1"></div>
-        <div class="wave-ring" id="wave2"></div>
-        <div class="wave-ring" id="wave3"></div>
-        <button class="talk-btn" id="talkBtn" disabled>
-            <span class="icon">🎙️</span>
-            <span class="label">按住说话</span>
-        </button>
-    </div>
-    <div class="talk-hint" id="hint">请先加入频道</div>
-    <div class="encrypt-badge" id="encryptBadge">
-        <div class="encrypt-dot"></div>
-        端对端加密
-    </div>
-</div>
-
-<!-- 日志 -->
-<div class="log-section" id="logSection">
-    <div class="log-entry">系统就绪</div>
-</div>
-
-</div>
-
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.39.0/dist/umd/supabase.min.js"></script>
-<script>
-    const SUPABASE_URL = 'https://hogtlfhzaptjmdofirpc.supabase.co';
-    const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhvZ3RsZmh6YXB0am1kb2ZpcnBjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQ0Mzk0MDgsImV4cCI6MjA5MDAxNTQwOH0.uWntVROe6VLzr6Uoqz57HoQ48NgmqJFy-UgE0sZ1ezI';
-    const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-
-    // 状态
-    let myId = 'u_' + Math.random().toString(36).substr(2, 8);
-    let myColor = '#' + Math.floor(Math.random()*0xffffff).toString(16).padStart(6,'0');
-    let myName = '用户' + myId.substr(2, 4);
-    let currentChannel = '';
-    let sbChannel = null;
-    let peers = new Map();
-    let localStream = null;
-    let isTalking = false;
-    let onlineUsers = new Map(); // id -> {name, color}
-    let hasPassword = false;
-
-    // 元素
-    const statusEl = document.getElementById('status');
-    const talkBtn = document.getElementById('talkBtn');
-    const waves = [document.getElementById('wave1'), document.getElementById('wave2'), document.getElementById('wave3')];
-
-    function setStatus(text, type='') {
-        statusEl.className = 'status-bar ' + type;
-        statusEl.querySelector('.status-text').textContent = text;
-    }
-
-    function addLog(msg, type='') {
-        const el = document.createElement('div');
-        el.className = 'log-entry ' + type;
-        const t = new Date().toLocaleTimeString('zh-CN', {hour:'2-digit',minute:'2-digit',second:'2-digit'});
-        el.textContent = `[${t}] ${msg}`;
-        document.getElementById('logSection').insertBefore(el, document.getElementById('logSection').firstChild);
-    }
-
-    function showToast(msg) {
-        document.querySelector('.toast')?.remove();
-        const t = document.createElement('div');
-        t.className = 'toast'; t.textContent = msg;
-        document.body.appendChild(t);
-        setTimeout(() => t.remove(), 2500);
-    }
-
-    // 哈希频道名+密码
-    async function hashChannel(ch, pw) {
-        const enc = new TextEncoder();
-        const hash = await crypto.subtle.digest('SHA-256', enc.encode(ch + '_' + pw + '_wt'));
-        return 'wt_' + Array.from(new Uint8Array(hash)).slice(0,10).map(b=>b.toString(16).padStart(2,'0')).join('');
-    }
-
-    // 更新用户列表
-    function updateUsers() {
-        const list = document.getElementById('usersList');
-        list.innerHTML = '';
-
-        // 自己
-        const me = document.createElement('div');
-        me.className = 'user-avatar me';
-        me.style.background = myColor + '33';
-        me.style.borderColor = myColor;
-        me.textContent = myName.substr(2, 2);
-        me.title = myName + '（我）';
-        list.appendChild(me);
-
-        // 其他人
-        onlineUsers.forEach((info, id) => {
-            const av = document.createElement('div');
-            av.className = 'user-avatar';
-            av.id = 'av_' + id;
-            av.style.background = info.color + '33';
-            av.style.borderColor = info.color;
-            av.textContent = info.name.substr(2, 2);
-            av.title = info.name;
-            list.appendChild(av);
-        });
-
-        document.getElementById('onlineTotal').textContent = (onlineUsers.size + 1) + ' 人';
-    }
-
-    // WebRTC
-    const RTC_CONFIG = {
-        iceServers: [
-            { urls: 'stun:stun.l.google.com:19302' },
-            { urls: 'stun:stun1.l.google.com:19302' },
-            { urls: 'stun:stun.cloudflare.com:3478' }
-        ]
-    };
-
-    function createPC(peerId) {
-        if (peers.has(peerId)) return peers.get(peerId);
-        const pc = new RTCPeerConnection(RTC_CONFIG);
-        peers.set(peerId, pc);
-
-        if (localStream) localStream.getTracks().forEach(t => pc.addTrack(t, localStream));
-
-        pc.ontrack = (e) => {
-            addLog('🔊 收到音频', 'ok');
-            const audio = new Audio();
-            audio.srcObject = e.streams[0];
-            audio.play().catch(() => {});
-            setStatus('🔵 对方正在说话...', 'receiving');
-            waves.forEach(w => w.classList.add('receiving-wave'));
-            talkBtn.classList.add('receiving-glow');
-            // 标记说话用户头像
-            const av = document.getElementById('av_' + peerId);
-            if (av) av.classList.add('speaking-indicator');
-            e.streams[0].getTracks()[0].onended = () => {
-                if (!isTalking) {
-                    setStatus('📻 ' + currentChannel + ' · 空闲', 'online');
-                    waves.forEach(w => w.classList.remove('receiving-wave'));
-                    talkBtn.classList.remove('receiving-glow');
-                }
-                if (av) av.classList.remove('speaking-indicator');
-            };
-        };
-
-        pc.onicecandidate = (e) => {
-            if (e.candidate) sendSignal(peerId, { type: 'candidate', candidate: e.candidate });
-        };
-
-        pc.onconnectionstatechange = () => {
-            if (pc.connectionState === 'connected') {
-                addLog('✅ 与 ' + (onlineUsers.get(peerId)?.name || peerId.substr(0,8)) + ' 连接成功', 'ok');
-                showToast('✅ 连接成功！可以说话了');
-                talkBtn.disabled = false;
-                document.getElementById('hint').textContent = '按住大按钮说话，松开停止\nPC端可按空格键';
-                setStatus('📻 ' + currentChannel + ' · 空闲', 'online');
+            if (!username || !room) {
+                alert('请输入昵称和房间号');
+                return;
             }
-            if (pc.connectionState === 'failed' || pc.connectionState === 'disconnected') {
-                peers.delete(peerId);
-            }
-        };
-        return pc;
-    }
 
-    function sendSignal(to, signal) {
-        sbChannel?.send({ type: 'broadcast', event: 'signal', payload: { from: myId, to, signal } });
-    }
+            currentUser = username;
+            currentRoom = room;
+            joinTime = Date.now();
+            onlineUsers.add(username);
 
-    function broadcast(event, payload) {
-        sbChannel?.send({ type: 'broadcast', event, payload: { from: myId, ...payload } });
-    }
+            document.getElementById('joinSection').classList.add('hidden');
+            document.getElementById('mainContent').classList.add('show');
 
-    async function handleSignal(from, signal) {
-        if (signal.type === 'offer') {
-            const pc = createPC(from);
-            await pc.setRemoteDescription(new RTCSessionDescription(signal.sdp));
-            const answer = await pc.createAnswer();
-            await pc.setLocalDescription(answer);
-            sendSignal(from, { type: 'answer', sdp: answer });
-        } else if (signal.type === 'answer') {
-            const pc = peers.get(from);
-            if (pc) await pc.setRemoteDescription(new RTCSessionDescription(signal.sdp));
-        } else if (signal.type === 'candidate') {
-            const pc = peers.get(from);
-            if (pc && pc.remoteDescription) await pc.addIceCandidate(new RTCIceCandidate(signal.candidate));
+            updateOnlineCount();
+            startListening();
         }
-    }
 
-    async function makeOffer(peerId) {
-        const pc = createPC(peerId);
-        const offer = await pc.createOffer({ offerToReceiveAudio: true });
-        await pc.setLocalDescription(offer);
-        sendSignal(peerId, { type: 'offer', sdp: offer });
-        addLog('向 ' + (onlineUsers.get(peerId)?.name || peerId.substr(0,8)) + ' 发起连接', 'info');
-    }
+        // 发送消息
+        async function sendMessage() {
+            const input = document.getElementById('messageInput');
+            const content = input.value.trim();
 
-    // 加入频道
-    async function joinChannel() {
-        const ch = document.getElementById('chInput').value.trim();
-        const pw = document.getElementById('pwInput').value.trim();
-        if (!ch) { showToast('请输入频道号'); return; }
-        if (!window.supabase) { showToast('❌ 网络加载失败，请刷新'); return; }
+            if (!content) return;
 
-        localStorage.setItem('lastCh', ch);
-        currentChannel = ch;
-        hasPassword = pw.length > 0;
+            try {
+                const timestamp = Date.now();
+                
+                displayMessage(currentUser, content, true, timestamp);
+                input.value = '';
 
-        // 哈希频道名（含密码）
-        const chHash = await hashChannel(ch, pw);
+                const response = await fetch(`${POCKETBASE_URL}/api/collections/messages/records`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        room: currentRoom,
+                        user: currentUser,
+                        content: content,
+                        timestamp: timestamp
+                    })
+                });
 
-        // 获取麦克风
-        try {
-            localStream = await navigator.mediaDevices.getUserMedia({
-                audio: { echoCancellation: true, noiseSuppression: true, sampleRate: 16000 },
-                video: false
+                if (response.ok) {
+                    const data = await response.json();
+                    console.log('消息已保存:', data.id);
+
+                    setTimeout(() => {
+                        deleteMessage(data.id);
+                    }, MESSAGE_EXPIRE_TIME);
+                }
+            } catch (error) {
+                console.error('发送失败:', error);
+            }
+        }
+
+        // 显示消息
+        function displayMessage(user, content, isOwn = false, timestamp = null) {
+            const msgId = `${user}-${content}-${timestamp || Date.now()}`;
+            
+            if (messageCache.has(msgId)) return;
+            messageCache.set(msgId, true);
+
+            const chatMessages = document.getElementById('chatMessages');
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message ${isOwn ? 'own' : 'other'}`;
+            messageDiv.id = `msg-${msgId}`;
+            
+            const time = new Date(timestamp || Date.now()).toLocaleTimeString('zh-CN', { 
+                hour: '2-digit', 
+                minute: '2-digit',
+                second: '2-digit'
             });
-            localStream.getAudioTracks().forEach(t => t.enabled = false);
-            addLog('麦克风就绪', 'ok');
-        } catch(e) {
-            showToast('❌ 请允许麦克风权限');
-            addLog('麦克风权限被拒绝', 'err');
-            return;
+
+            messageDiv.innerHTML = `
+                <div class="message-user">${user} ${time}</div>
+                <div>${content}</div>
+            `;
+
+            chatMessages.appendChild(messageDiv);
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+
+            setTimeout(() => {
+                messageDiv.style.animation = 'fadeOut 1s ease';
+                setTimeout(() => {
+                    messageDiv.remove();
+                    messageCache.delete(msgId);
+                }, 1000);
+            }, MESSAGE_EXPIRE_TIME - 1000);
         }
 
-        // 订阅 Supabase 频道
-        sbChannel = sb.channel(chHash, { config: { broadcast: { self: false } } });
-
-        sbChannel.on('broadcast', { event: 'signal' }, ({ payload }) => {
-            if (payload.to === myId) handleSignal(payload.from, payload.signal);
-        });
-
-        sbChannel.on('broadcast', { event: 'join' }, ({ payload }) => {
-            if (payload.from !== myId) {
-                onlineUsers.set(payload.from, { name: payload.name, color: payload.color });
-                updateUsers();
-                addLog(payload.name + ' 加入了频道', 'ok');
-                makeOffer(payload.from);
-                // 回复自己的存在
-                broadcast('here', { name: myName, color: myColor, to: payload.from });
+        // 删除消息
+        async function deleteMessage(recordId) {
+            try {
+                await fetch(`${POCKETBASE_URL}/api/collections/messages/records/${recordId}`, {
+                    method: 'DELETE'
+                });
+            } catch (error) {
+                console.log('删除失败:', error);
             }
-        });
+        }
 
-        sbChannel.on('broadcast', { event: 'here' }, ({ payload }) => {
-            if (payload.to === myId || !payload.to) {
-                onlineUsers.set(payload.from, { name: payload.name, color: payload.color });
-                updateUsers();
-            }
-        });
-
-        sbChannel.on('broadcast', { event: 'leave' }, ({ payload }) => {
-            if (payload.from !== myId) {
-                const name = onlineUsers.get(payload.from)?.name || '用户';
-                onlineUsers.delete(payload.from);
-                if (peers.has(payload.from)) { peers.get(payload.from).close(); peers.delete(payload.from); }
-                updateUsers();
-                addLog(name + ' 离开了频道', 'warn');
-                if (peers.size === 0) {
-                    talkBtn.disabled = true;
-                    document.getElementById('hint').textContent = '等待对方加入...';
-                    setStatus('📻 ' + ch + ' · 等待对方', 'online');
+        // 监听消息
+        async function startListening() {
+            try {
+                const response = await fetch(
+                    `${POCKETBASE_URL}/api/collections/messages/records?filter=(room='${currentRoom}')&sort=-timestamp&limit=50`
+                );
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    if (data.items && data.items.length > 0) {
+                        data.items.reverse().forEach(record => {
+                            // 只显示进入房间后发送的消息
+                            if (record.timestamp >= joinTime) {
+                                displayMessage(record.user, record.content, record.user === currentUser, record.timestamp);
+                            }
+                        });
+                    }
                 }
+            } catch (error) {
+                console.log('加载消息失败:', error);
+            }
+
+            pollInterval = setInterval(async () => {
+                try {
+                    const response = await fetch(
+                        `${POCKETBASE_URL}/api/collections/messages/records?filter=(room='${currentRoom}')&sort=-timestamp&limit=10`
+                    );
+                    
+                    if (response.ok) {
+                        const data = await response.json();
+                        if (data.items && data.items.length > 0) {
+                            data.items.reverse().forEach(record => {
+                                // 只显示进入房间后发送的消息
+                                if (record.timestamp >= joinTime) {
+                                    displayMessage(record.user, record.content, record.user === currentUser, record.timestamp);
+                                }
+                            });
+                        }
+                    }
+                } catch (error) {
+                    console.log('轮询失败:', error);
+                }
+            }, 2000);
+        }
+
+        // 更新在线人数
+        function updateOnlineCount() {
+            document.getElementById('onlineCount').textContent = onlineUsers.size;
+            document.getElementById('chatOnlineCount').textContent = onlineUsers.size;
+        }
+
+        // PTT 按钮
+        function startPTT() {
+            document.getElementById('pttBtn').style.background = 'linear-gradient(135deg, #cc0000, #ff0000)';
+            document.getElementById('screen').textContent = '🎤 说话中...';
+        }
+
+        function stopPTT() {
+            document.getElementById('pttBtn').style.background = 'linear-gradient(135deg, #ff6b6b, #ff8787)';
+            document.getElementById('screen').textContent = '就绪';
+        }
+
+        // 回车发送
+        function handleKeyPress(event) {
+            if (event.key === 'Enter') {
+                sendMessage();
+            }
+        }
+
+        // 页面卸载时清理
+        window.addEventListener('beforeunload', () => {
+            if (pollInterval) clearInterval(pollInterval);
+            if (currentUser && currentRoom) {
+                onlineUsers.delete(currentUser);
             }
         });
-
-        sbChannel.subscribe((status) => {
-            if (status === 'SUBSCRIBED') {
-                addLog('已加入频道: ' + ch, 'ok');
-                broadcast('join', { name: myName, color: myColor });
-                showToast('✅ 已加入: ' + ch);
-                setStatus('📻 ' + ch + ' · 等待对方...', 'online');
-            } else if (status === 'CHANNEL_ERROR') {
-                addLog('频道连接失败', 'err');
-                showToast('❌ 连接失败，请重试');
-            }
-        });
-
-        // 更新 UI
-        document.getElementById('joinSection').classList.add('hidden');
-        document.getElementById('channelBar').classList.add('show');
-        document.getElementById('usersBar').classList.add('show');
-        document.getElementById('chBadge').textContent = '📻 ' + ch;
-        if (hasPassword) document.getElementById('lockBadge').style.display = 'flex';
-        document.getElementById('encryptBadge').classList.add('show');
-        document.getElementById('hint').textContent = '等待对方加入...';
-        updateUsers();
-    }
-
-    // 离开频道
-    function leaveChannel() {
-        if (isTalking) stopTalking();
-        broadcast('leave', {});
-        peers.forEach(pc => pc.close()); peers.clear();
-        onlineUsers.clear();
-        if (sbChannel) { sb.removeChannel(sbChannel); sbChannel = null; }
-        if (localStream) { localStream.getTracks().forEach(t => t.stop()); localStream = null; }
-        currentChannel = '';
-        document.getElementById('joinSection').classList.remove('hidden');
-        document.getElementById('channelBar').classList.remove('show');
-        document.getElementById('usersBar').classList.remove('show');
-        document.getElementById('lockBadge').style.display = 'none';
-        document.getElementById('encryptBadge').classList.remove('show');
-        talkBtn.disabled = true;
-        document.getElementById('hint').textContent = '请先加入频道';
-        setStatus('就绪', '');
-        updateUsers();
-        addLog('已离开频道', 'info');
-        showToast('已离开频道');
-    }
-
-    // 说话
-    function startTalking() {
-        if (isTalking || !localStream || talkBtn.disabled) return;
-        isTalking = true;
-        localStream.getAudioTracks().forEach(t => t.enabled = true);
-        talkBtn.classList.add('active');
-        talkBtn.querySelector('.icon').textContent = '🔴';
-        talkBtn.querySelector('.label').textContent = '正在说话...';
-        waves.forEach(w => w.classList.add('active'));
-        setStatus('🔴 我正在说话...', 'speaking');
-    }
-
-    function stopTalking() {
-        if (!isTalking) return;
-        isTalking = false;
-        localStream.getAudioTracks().forEach(t => t.enabled = false);
-        talkBtn.classList.remove('active');
-        talkBtn.querySelector('.icon').textContent = '🎙️';
-        talkBtn.querySelector('.label').textContent = '按住说话';
-        waves.forEach(w => w.classList.remove('active'));
-        setStatus('📻 ' + currentChannel + ' · 空闲', 'online');
-    }
-
-    // 事件
-    talkBtn.addEventListener('mousedown', e => { e.preventDefault(); startTalking(); });
-    talkBtn.addEventListener('mouseup', e => { e.preventDefault(); stopTalking(); });
-    talkBtn.addEventListener('mouseleave', () => { if (isTalking) stopTalking(); });
-    talkBtn.addEventListener('touchstart', e => { e.preventDefault(); startTalking(); }, { passive: false });
-    talkBtn.addEventListener('touchend', e => { e.preventDefault(); stopTalking(); }, { passive: false });
-    talkBtn.addEventListener('touchcancel', e => { e.preventDefault(); stopTalking(); }, { passive: false });
-    document.addEventListener('keydown', e => {
-        if (e.code === 'Space' && !e.repeat && document.activeElement.tagName !== 'INPUT') { e.preventDefault(); startTalking(); }
-    });
-    document.addEventListener('keyup', e => { if (e.code === 'Space') { e.preventDefault(); stopTalking(); } });
-    document.addEventListener('visibilitychange', () => { if (document.hidden && isTalking) stopTalking(); });
-    document.getElementById('chInput').addEventListener('keydown', e => { if (e.key === 'Enter') joinChannel(); });
-    document.getElementById('pwInput').addEventListener('keydown', e => { if (e.key === 'Enter') joinChannel(); });
-
-    // 自动填入上次频道
-    const last = localStorage.getItem('lastCh');
-    if (last) document.getElementById('chInput').value = last;
-</script>
+    </script>
 </body>
 </html>
