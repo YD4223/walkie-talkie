@@ -37,8 +37,8 @@
             background: rgba(0,0,0,0.5);
             border-bottom: 1px solid rgba(255,255,255,0.08);
             backdrop-filter: blur(20px);
+            flex-shrink: 0;
         }
-
         header h1 {
             font-size: 1.5rem;
             font-weight: 700;
@@ -47,29 +47,10 @@
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
         }
-
-        .status-bar { 
-            margin-top: 5px; 
-            font-size: 0.8rem; 
-            color: #555; 
-            display: flex; 
-            align-items: center; 
-            justify-content: center; 
-            gap: 6px; 
-        }
-        .status-dot { 
-            width: 7px; 
-            height: 7px; 
-            border-radius: 50%; 
-            background: #555; 
-        }
-        .status-bar.online .status-dot { 
-            background: #4ade80; 
-            box-shadow: 0 0 8px #4ade80; 
-        }
-        .status-bar.online .status-text { 
-            color: #4ade80; 
-        }
+        .status-bar { margin-top: 5px; font-size: 0.8rem; color: #555; display: flex; align-items: center; justify-content: center; gap: 6px; }
+        .status-dot { width: 7px; height: 7px; border-radius: 50%; background: #555; }
+        .status-bar.online .status-dot { background: #4ade80; box-shadow: 0 0 8px #4ade80; }
+        .status-bar.online .status-text { color: #4ade80; }
 
         .join-section {
             padding: 20px;
@@ -78,201 +59,129 @@
             backdrop-filter: blur(10px);
         }
         .join-section.hidden { display: none; }
-        
-        .join-form { 
-            max-width: 420px; 
-            margin: 0 auto; 
-            display: flex; 
-            flex-direction: column; 
-            gap: 12px; 
-        }
-        
-        .input-group { 
-            display: flex; 
-            gap: 10px; 
-        }
-        
-        .input-wrap { 
-            flex: 1; 
-            position: relative; 
-        }
-        
-        .input-wrap .input-icon { 
-            position: absolute; 
-            left: 14px; 
-            top: 50%; 
-            transform: translateY(-50%); 
-            font-size: 1rem; 
-        }
-        
+        .join-form { max-width: 420px; margin: 0 auto; display: flex; flex-direction: column; gap: 12px; }
+        .input-group { display: flex; gap: 10px; }
+        .input-wrap { flex: 1; position: relative; }
+        .input-wrap .input-icon { position: absolute; left: 14px; top: 50%; transform: translateY(-50%); font-size: 1rem; }
         .input-wrap input {
-            width: 100%; 
-            padding: 13px 16px 13px 40px;
+            width: 100%; padding: 13px 16px 13px 40px;
             border: 1.5px solid rgba(255,255,255,0.1);
             border-radius: 12px;
             background: rgba(255,255,255,0.06);
-            color: #fff; 
-            font-size: 0.95rem; 
-            outline: none;
+            color: #fff; font-size: 0.95rem; outline: none;
             transition: all 0.3s;
         }
-        
-        .input-wrap input:focus { 
-            border-color: #00d4ff; 
-            background: rgba(0,212,255,0.05); 
-        }
-        
-        .input-wrap input::placeholder { 
-            color: #444; 
-        }
-        
+        .input-wrap input:focus { border-color: #00d4ff; background: rgba(0,212,255,0.05); }
+        .input-wrap input::placeholder { color: #444; }
         .btn-join {
             padding: 13px 22px;
             background: linear-gradient(135deg, #00d4ff, #7c3aed);
-            color: #fff; 
-            border: none; 
-            border-radius: 12px;
-            font-size: 0.95rem; 
-            font-weight: 700; 
-            cursor: pointer;
-            transition: all 0.2s;
+            color: #fff; border: none; border-radius: 12px;
+            font-size: 0.95rem; font-weight: 700; cursor: pointer;
+            transition: all 0.2s; white-space: nowrap;
             box-shadow: 0 4px 20px rgba(0,212,255,0.3);
         }
-        
-        .btn-join:hover { 
-            transform: translateY(-1px); 
-            box-shadow: 0 6px 25px rgba(0,212,255,0.4); 
-        }
+        .btn-join:hover { transform: translateY(-1px); box-shadow: 0 6px 25px rgba(0,212,255,0.4); }
 
         .main-content {
             flex: 1;
             display: none;
+            flex-direction: row;
             overflow: hidden;
         }
+        .main-content.show { display: flex; }
 
-        .main-content.show { 
-            display: flex;
-            flex-direction: row;
-        }
-
-        .ptt-panel {
-            flex: 0 0 280px;
+        .ptt-section {
+            flex: 0 0 300px;
             background: rgba(0,0,0,0.4);
             border-right: 1px solid rgba(255,255,255,0.1);
-            padding: 24px;
+            padding: 20px;
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            gap: 24px;
         }
 
-        .walkie-talkie {
-            width: 140px;
-            height: 200px;
-            background: #1a1a2e;
-            border-radius: 15px;
-            border: 2px solid #00d4ff;
-            padding: 14px;
-            display: flex;
-            flex-direction: column;
-            gap: 12px;
-            box-shadow: 0 0 20px rgba(0,212,255,0.3);
+        .wave-container {
+            position: relative; width: 200px; height: 200px;
+            display: flex; align-items: center; justify-content: center;
+            margin-bottom: 20px;
         }
-
-        .screen {
-            width: 100%;
-            height: 60px;
-            background: #0a0;
-            border-radius: 6px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 12px;
-            font-weight: bold;
-            color: #000;
-            text-align: center;
+        .wave-ring {
+            position: absolute; border-radius: 50%;
+            border: 2px solid rgba(0,212,255,0.2);
+            animation: waveExpand 2s ease-out infinite;
         }
-
-        .ptt-button {
-            width: 100%;
-            padding: 14px;
-            background: linear-gradient(135deg, #ff6b6b, #ff8787);
-            color: white;
-            border: none;
-            border-radius: 10px;
-            font-weight: bold;
-            cursor: pointer;
-            font-size: 0.95rem;
-            transition: all 0.2s;
-            box-shadow: 0 4px 15px rgba(255,107,107,0.3);
+        .wave-ring:nth-child(1) { width: 160px; height: 160px; animation-delay: 0s; }
+        .wave-ring:nth-child(2) { width: 180px; height: 180px; animation-delay: 0.5s; }
+        .wave-ring:nth-child(3) { width: 200px; height: 200px; animation-delay: 1s; }
+        @keyframes waveExpand {
+            0% { opacity: 0.6; transform: scale(0.8); }
+            100% { opacity: 0; transform: scale(1.1); }
         }
+        .wave-ring.active { border-color: rgba(255,68,68,0.4); }
 
-        .ptt-button:active {
-            background: linear-gradient(135deg, #cc0000, #ff0000);
+        .talk-btn {
+            width: 140px; height: 140px; border-radius: 50%; border: none;
+            background: radial-gradient(circle at 35% 30%, #1e1e3a, #0d0d1f);
+            box-shadow: 0 0 0 3px rgba(255,255,255,0.04), 0 10px 40px rgba(0,0,0,0.8);
+            cursor: pointer; transition: all 0.15s;
+            display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px;
+            user-select: none; -webkit-user-select: none;
+            position: relative; z-index: 1;
+        }
+        .talk-btn .icon { font-size: 3rem; }
+        .talk-btn .label { font-size: 0.8rem; color: #555; font-weight: 600; }
+        .talk-btn:disabled { opacity: 0.35; cursor: not-allowed; }
+        .talk-btn.active {
+            background: radial-gradient(circle at 35% 30%, #3a0000, #1a0000);
+            box-shadow: 0 0 60px rgba(255,68,68,0.4), 0 10px 40px rgba(0,0,0,0.8);
             transform: scale(0.95);
         }
+        .talk-btn.active .icon { filter: drop-shadow(0 0 15px rgba(255,68,68,0.8)); }
+        .talk-btn.active .label { color: #ff8888; }
 
-        .status-info {
+        .ptt-info {
             text-align: center;
-            font-size: 0.9rem;
+            margin-top: 20px;
+            font-size: 0.85rem;
             color: #888;
         }
 
-        .status-info div {
-            margin: 4px 0;
-        }
-
-        .chat-panel {
+        .chat-section {
             flex: 1;
-            background: rgba(0,0,0,0.4);
             display: flex;
             flex-direction: column;
-            overflow: hidden;
+            background: rgba(0,0,0,0.3);
             min-width: 0;
         }
 
         .chat-header {
-            padding: 15px;
+            padding: 12px 15px;
+            background: rgba(0,0,0,0.3);
             border-bottom: 1px solid rgba(255,255,255,0.1);
             display: flex;
             justify-content: space-between;
             align-items: center;
             flex-shrink: 0;
         }
-
-        .chat-header h2 {
-            font-size: 1rem;
-            font-weight: 600;
-        }
-
-        .header-right {
-            display: flex;
-            gap: 10px;
-            align-items: center;
-        }
-
+        .chat-header h2 { font-size: 0.95rem; font-weight: 600; }
+        .header-right { display: flex; gap: 8px; align-items: center; }
         .online-count {
-            background: rgba(0,212,255,0.2);
-            padding: 5px 12px;
-            border-radius: 20px;
-            font-size: 0.85rem;
+            background: rgba(0,212,255,0.15);
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: 0.8rem;
             color: #00d4ff;
         }
-
-        .btn-leave-room {
-            background: rgba(255,100,100,0.2);
+        .btn-leave {
+            background: rgba(255,100,100,0.15);
             color: #ff6b6b;
-            border: 1px solid rgba(255,100,100,0.3);
-            padding: 6px 12px;
+            border: 1px solid rgba(255,100,100,0.25);
+            padding: 5px 12px;
             border-radius: 6px;
             font-size: 0.8rem;
             cursor: pointer;
-            transition: all 0.2s;
-        }
-
-        .btn-leave-room:hover {
-            background: rgba(255,100,100,0.3);
         }
 
         .chat-messages {
@@ -282,45 +191,29 @@
             display: flex;
             flex-direction: column;
             gap: 10px;
-            min-height: 0;
         }
 
         .message {
             padding: 10px 14px;
             border-radius: 10px;
-            max-width: 80%;
+            max-width: 75%;
             word-wrap: break-word;
             font-size: 0.9rem;
-            animation: slideIn 0.3s ease;
         }
-
-        @keyframes slideIn {
-            from { opacity: 0; transform: translateY(10px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
-        @keyframes fadeOut {
-            from { opacity: 1; }
-            to { opacity: 0; }
-        }
-
         .message.own {
             align-self: flex-end;
             background: linear-gradient(135deg, #00d4ff, #7c3aed);
             color: white;
         }
-
         .message.other {
             align-self: flex-start;
             background: rgba(255,255,255,0.1);
             color: #fff;
         }
-
         .message-user {
-            font-size: 0.8rem;
+            font-size: 0.75rem;
             opacity: 0.7;
             margin-bottom: 3px;
-            font-weight: 500;
         }
 
         .chat-input-area {
@@ -330,7 +223,6 @@
             gap: 8px;
             flex-shrink: 0;
         }
-
         .chat-input-area input {
             flex: 1;
             padding: 10px 14px;
@@ -340,18 +232,9 @@
             color: #fff;
             font-size: 0.9rem;
             outline: none;
-            transition: all 0.3s;
         }
-
-        .chat-input-area input:focus {
-            border-color: #00d4ff;
-            background: rgba(0,212,255,0.05);
-        }
-
-        .chat-input-area input::placeholder {
-            color: #555;
-        }
-
+        .chat-input-area input:focus { border-color: #00d4ff; }
+        .chat-input-area input::placeholder { color: #555; }
         .chat-input-area button {
             padding: 10px 16px;
             background: linear-gradient(135deg, #00d4ff, #7c3aed);
@@ -360,320 +243,379 @@
             border-radius: 20px;
             cursor: pointer;
             font-weight: 600;
-            font-size: 0.9rem;
-            transition: all 0.2s;
-        }
-
-        .chat-input-area button:hover {
-            transform: translateY(-1px);
-            box-shadow: 0 4px 15px rgba(0,212,255,0.3);
+            font-size: 0.85rem;
         }
 
         @media (max-width: 768px) {
             .main-content.show {
                 flex-direction: column;
             }
-
-            .ptt-panel {
+            .ptt-section {
                 flex: 0 0 auto;
                 border-right: none;
                 border-bottom: 1px solid rgba(255,255,255,0.1);
-                padding: 16px;
-                gap: 16px;
+                padding: 15px;
+                gap: 15px;
             }
-
-            .walkie-talkie {
-                width: 100px;
+            .wave-container {
+                width: 150px;
                 height: 150px;
-                padding: 10px;
             }
-
-            .screen {
-                height: 45px;
-                font-size: 10px;
+            .wave-ring:nth-child(1) { width: 120px; height: 120px; }
+            .wave-ring:nth-child(2) { width: 135px; height: 135px; }
+            .wave-ring:nth-child(3) { width: 150px; height: 150px; }
+            .talk-btn {
+                width: 110px;
+                height: 110px;
             }
-
-            .ptt-button {
-                padding: 12px;
-                font-size: 0.9rem;
-            }
-
-            .chat-panel {
-                flex: 1;
-                min-height: 250px;
-            }
-
-            .message {
-                max-width: 85%;
-            }
-
-            .chat-header {
-                padding: 12px;
-            }
-
-            .chat-messages {
-                padding: 12px;
-            }
-
-            .chat-input-area {
-                padding: 8px;
-                gap: 6px;
-            }
-
-            .chat-input-area input {
-                padding: 8px 10px;
-                font-size: 0.85rem;
-            }
-
-            .chat-input-area button {
-                padding: 8px 12px;
-                font-size: 0.85rem;
-            }
-
-            .header-right {
-                gap: 6px;
-            }
-
-            .online-count {
-                padding: 4px 8px;
-                font-size: 0.75rem;
-            }
-
-            .btn-leave-room {
-                padding: 4px 8px;
-                font-size: 0.75rem;
-            }
+            .talk-btn .icon { font-size: 2.5rem; }
+            .talk-btn .label { font-size: 0.7rem; }
+            .ptt-info { margin-top: 10px; font-size: 0.8rem; }
+            .chat-section { flex: 1; min-height: 200px; }
+            .chat-header { padding: 10px 12px; }
+            .chat-header h2 { font-size: 0.9rem; }
+            .chat-messages { padding: 12px; }
+            .message { max-width: 85%; font-size: 0.85rem; }
+            .chat-input-area { padding: 10px; gap: 6px; }
+            .chat-input-area input { padding: 8px 12px; font-size: 0.85rem; }
+            .chat-input-area button { padding: 8px 12px; font-size: 0.8rem; }
+            .online-count { padding: 3px 8px; font-size: 0.75rem; }
+            .btn-leave { padding: 4px 10px; font-size: 0.75rem; }
         }
 
-        ::-webkit-scrollbar {
-            width: 6px;
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
         }
-
-        ::-webkit-scrollbar-track {
-            background: transparent;
-        }
-
-        ::-webkit-scrollbar-thumb {
-            background: rgba(255,255,255,0.1);
-            border-radius: 3px;
-        }
-
-        ::-webkit-scrollbar-thumb:hover {
-            background: rgba(255,255,255,0.2);
-        }
+        .message { animation: slideIn 0.3s ease; }
     </style>
 </head>
 <body>
-    <div class="bg-stars"></div>
-    <div class="container">
-        <header>
-            <h1>零距离</h1>
-            <div class="status-bar online">
-                <div class="status-dot"></div>
-                <span class="status-text">系统就绪</span>
+<div class="bg-stars"></div>
+<div class="container">
+
+<header>
+    <h1>零距离</h1>
+    <div class="status-bar online">
+        <div class="status-dot"></div>
+        <span class="status-text">系统就绪</span>
+    </div>
+</header>
+
+<div class="join-section" id="joinSection">
+    <div class="join-form">
+        <div class="input-group">
+            <div class="input-wrap">
+                <span class="input-icon">👤</span>
+                <input type="text" id="username" placeholder="输入昵称" maxlength="20">
             </div>
-        </header>
-
-        <div class="join-section" id="joinSection">
-            <div class="join-form">
-                <div class="input-group">
-                    <div class="input-wrap">
-                        <span class="input-icon">👤</span>
-                        <input type="text" id="username" placeholder="输入昵称" maxlength="20">
-                    </div>
-                </div>
-
-                <div class="input-group">
-                    <div class="input-wrap">
-                        <span class="input-icon">🔐</span>
-                        <input type="text" id="room" placeholder="房间号" value="lobby" maxlength="20">
-                    </div>
-                    <button class="btn-join" onclick="joinRoom()">进入</button>
-                </div>
+            <div class="input-wrap">
+                <span class="input-icon">🔐</span>
+                <input type="text" id="room" placeholder="房间号" value="lobby" maxlength="20">
             </div>
         </div>
+        <button class="btn-join" onclick="joinRoom()">进入房间</button>
+    </div>
+</div>
 
-        <div class="main-content" id="mainContent">
-            <div class="ptt-panel">
-                <div class="walkie-talkie">
-                    <div class="screen" id="screen">就绪</div>
-                    <div style="flex: 1;"></div>
-                </div>
-                <button class="ptt-button" id="pttBtn" onmousedown="startPTT()" onmouseup="stopPTT()" ontouchstart="startPTT()" ontouchend="stopPTT()">
-                    按住说话
-                </button>
-                <div class="status-info">
-                    <div>在线: <span id="onlineCount">1</span> 人</div>
-                    <div style="font-size: 0.8rem; margin-top: 4px;">端对端加密</div>
-                </div>
-            </div>
-
-            <div class="chat-panel">
-                <div class="chat-header">
-                    <h2>💬 聊天</h2>
-                    <div class="header-right">
-                        <div class="online-count">在线 <span id="chatOnlineCount">1</span> 人</div>
-                        <button class="btn-leave-room" onclick="leaveRoom()">离开</button>
-                    </div>
-                </div>
-                <div class="chat-messages" id="chatMessages"></div>
-                <div class="chat-input-area">
-                    <input type="text" id="messageInput" placeholder="输入消息..." onkeypress="handleKeyPress(event)">
-                    <button onclick="sendMessage()">发送</button>
-                </div>
-            </div>
+<div class="main-content" id="mainContent">
+    <div class="ptt-section">
+        <div class="wave-container">
+            <div class="wave-ring"></div>
+            <div class="wave-ring"></div>
+            <div class="wave-ring"></div>
+            <button class="talk-btn" id="talkBtn" disabled>
+                <span class="icon">🎙️</span>
+                <span class="label">按住说话</span>
+            </button>
+        </div>
+        <div class="ptt-info">
+            <div>在线: <span id="onlineCount">1</span> 人</div>
+            <div style="font-size:0.75rem;margin-top:5px;color:#4ade80">端对端加密</div>
         </div>
     </div>
 
-    <script>
-        const SUPABASE_URL = 'https://hogtlfhzaptjmdofirpc.supabase.co';
-        const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhvZ3RsZmh6YXB0am1kb2ZpcnBjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQ0Mzk0MDgsImV4cCI6MjA5MDAxNTQwOH0.uWntVROe6VLzr6Uoqz57HoQ48NgmqJFy-UgE0sZ1ezI';
-        const POCKETBASE_URL = 'http://127.0.0.1:8090';
+    <div class="chat-section">
+        <div class="chat-header">
+            <h2>💬 文字聊天</h2>
+            <div class="header-right">
+                <div class="online-count">在线 <span id="chatOnlineCount">1</span> 人</div>
+                <button class="btn-leave" onclick="leaveRoom()">离开</button>
+            </div>
+        </div>
+        <div class="chat-messages" id="chatMessages"></div>
+        <div class="chat-input-area">
+            <input type="text" id="messageInput" placeholder="输入消息..." onkeypress="handleKeyPress(event)">
+            <button onclick="sendMessage()">发送</button>
+        </div>
+    </div>
+</div>
 
-        let myId = 'u_' + Math.random().toString(36).substr(2, 8);
-        let myName = '用户' + myId.substr(2, 4);
-        let currentRoom = null;
-        let peers = new Map();
-        let localStream = null;
-        let isTalking = false;
-        let onlineUsers = new Map();
-        let messageCache = new Map();
-        let pollInterval = null;
-        let userPollInterval = null;
-        let joinTime = null;
-        let channelId = null;
+</div>
 
-        const RTC_CONFIG = {
-            iceServers: [
-                { urls: 'stun:stun.l.google.com:19302' },
-                { urls: 'stun:stun1.l.google.com:19302' },
-                { urls: 'stun:stun.cloudflare.com:3478' }
-            ]
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.39.0/dist/umd/supabase.min.js"></script>
+<script>
+    const SUPABASE_URL = 'https://hogtlfhzaptjmdofirpc.supabase.co';
+    const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhvZ3RsZmh6YXB0am1kb2ZpcnBjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQ0Mzk0MDgsImV4cCI6MjA5MDAxNTQwOH0.uWntVROe6VLzr6Uoqz57HoQ48NgmqJFy-UgE0sZ1ezI';
+    const POCKETBASE_URL = 'http://127.0.0.1:8090';
+
+    const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+    let myId = 'u_' + Math.random().toString(36).substr(2, 8);
+    let myColor = '#' + Math.floor(Math.random()*0xffffff).toString(16).padStart(6,'0');
+    let myName = '用户' + myId.substr(2, 4);
+    let currentRoom = '';
+    let sbChannel = null;
+    let peers = new Map();
+    let localStream = null;
+    let isTalking = false;
+    let onlineUsers = new Map();
+    let messageCache = new Set();
+    let pollInterval = null;
+    let joinTime = null;
+
+    const talkBtn = document.getElementById('talkBtn');
+
+    const RTC_CONFIG = {
+        iceServers: [
+            { urls: 'stun:stun.l.google.com:19302' },
+            { urls: 'stun:stun1.l.google.com:19302' }
+        ]
+    };
+
+    async function hashChannel(ch) {
+        const enc = new TextEncoder();
+        const hash = await crypto.subtle.digest('SHA-256', enc.encode(ch + '_wt'));
+        return 'wt_' + Array.from(new Uint8Array(hash)).slice(0,10).map(b=>b.toString(16).padStart(2,'0')).join('');
+    }
+
+    function updateOnlineCount() {
+        const count = onlineUsers.size + 1;
+        document.getElementById('onlineCount').textContent = count;
+        document.getElementById('chatOnlineCount').textContent = count;
+    }
+
+    function sendSignal(to, signal) {
+        sbChannel?.send({ type: 'broadcast', event: 'signal', payload: { from: myId, to, signal } });
+    }
+
+    function broadcast(event, payload) {
+        sbChannel?.send({ type: 'broadcast', event, payload: { from: myId, ...payload } });
+    }
+
+    function createPC(peerId) {
+        if (peers.has(peerId)) return peers.get(peerId);
+        const pc = new RTCPeerConnection(RTC_CONFIG);
+        peers.set(peerId, pc);
+
+        if (localStream) localStream.getTracks().forEach(t => pc.addTrack(t, localStream));
+
+        pc.ontrack = (e) => {
+            const audio = new Audio();
+            audio.srcObject = e.streams[0];
+            audio.play().catch(() => {});
         };
 
-        async function joinRoom() {
-            const username = document.getElementById('username').value.trim();
-            const room = document.getElementById('room').value.trim();
+        pc.onicecandidate = (e) => {
+            if (e.candidate) sendSignal(peerId, { type: 'candidate', candidate: e.candidate });
+        };
 
-            if (!username || !room) {
-                alert('请输入昵称和房间号');
-                return;
+        pc.onconnectionstatechange = () => {
+            if (pc.connectionState === 'connected') {
+                talkBtn.disabled = false;
             }
+        };
+        return pc;
+    }
 
-            myName = username;
-            currentRoom = room;
-            joinTime = Date.now();
-            channelId = await hashChannel(room, '');
-
-            try {
-                localStream = await navigator.mediaDevices.getUserMedia({
-                    audio: { echoCancellation: true, noiseSuppression: true },
-                    video: false
-                });
-                localStream.getAudioTracks().forEach(t => t.enabled = false);
-            } catch(e) {
-                alert('请允许麦克风权限');
-                return;
-            }
-
-            document.getElementById('joinSection').classList.add('hidden');
-            document.getElementById('mainContent').classList.add('show');
-            updateOnlineCount();
-            startListening();
-            startUserPolling();
+    async function handleSignal(from, signal) {
+        if (signal.type === 'offer') {
+            const pc = createPC(from);
+            await pc.setRemoteDescription(new RTCSessionDescription(signal.sdp));
+            const answer = await pc.createAnswer();
+            await pc.setLocalDescription(answer);
+            sendSignal(from, { type: 'answer', sdp: answer });
+        } else if (signal.type === 'answer') {
+            const pc = peers.get(from);
+            if (pc) await pc.setRemoteDescription(new RTCSessionDescription(signal.sdp));
+        } else if (signal.type === 'candidate') {
+            const pc = peers.get(from);
+            if (pc && pc.remoteDescription) await pc.addIceCandidate(new RTCIceCandidate(signal.candidate));
         }
+    }
 
-        async function hashChannel(ch, pw) {
-            const enc = new TextEncoder();
-            const hash = await crypto.subtle.digest('SHA-256', enc.encode(ch + '_' + pw + '_wt'));
-            return 'wt_' + Array.from(new Uint8Array(hash)).slice(0,10).map(b=>b.toString(16).padStart(2,'0')).join('');
-        }
+    async function makeOffer(peerId) {
+        const pc = createPC(peerId);
+        const offer = await pc.createOffer({ offerToReceiveAudio: true });
+        await pc.setLocalDescription(offer);
+        sendSignal(peerId, { type: 'offer', sdp: offer });
+    }
 
-        function startUserPolling() {
-            userPollInterval = setInterval(() => {
-                updateOnlineCount();
-            }, 1000);
-        }
+    async function joinRoom() {
+        const username = document.getElementById('username').value.trim();
+        const room = document.getElementById('room').value.trim();
+        if (!username || !room) { alert('请输入昵称和房间号'); return; }
 
-        async function sendMessage() {
-            const input = document.getElementById('messageInput');
-            const content = input.value.trim();
+        myName = username;
+        currentRoom = room;
+        joinTime = Date.now();
 
-            if (!content) return;
-
-            try {
-                const timestamp = Date.now();
-                displayMessage(myName, content, true, timestamp);
-                input.value = '';
-
-                const response = await fetch(`${POCKETBASE_URL}/api/collections/messages/records`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        room: currentRoom,
-                        user: myName,
-                        content: content,
-                        timestamp: timestamp
-                    })
-                });
-
-                if (response.ok) {
-                    const data = await response.json();
-                    setTimeout(() => deleteMessage(data.id), 30000);
-                }
-            } catch (error) {
-                console.error('发送失败:', error);
-            }
-        }
-
-        function displayMessage(user, content, isOwn = false, timestamp = null) {
-            const msgId = `${user}-${content}-${timestamp || Date.now()}`;
-            if (messageCache.has(msgId)) return;
-            messageCache.set(msgId, true);
-
-            const chatMessages = document.getElementById('chatMessages');
-            const messageDiv = document.createElement('div');
-            messageDiv.className = `message ${isOwn ? 'own' : 'other'}`;
-            messageDiv.id = `msg-${msgId}`;
-            
-            const time = new Date(timestamp || Date.now()).toLocaleTimeString('zh-CN', { 
-                hour: '2-digit', 
-                minute: '2-digit',
-                second: '2-digit'
+        try {
+            localStream = await navigator.mediaDevices.getUserMedia({
+                audio: { echoCancellation: true, noiseSuppression: true },
+                video: false
             });
-
-            messageDiv.innerHTML = `<div class="message-user">${user} ${time}</div><div>${content}</div>`;
-            chatMessages.appendChild(messageDiv);
-            chatMessages.scrollTop = chatMessages.scrollHeight;
-
-            setTimeout(() => {
-                messageDiv.style.animation = 'fadeOut 1s ease';
-                setTimeout(() => {
-                    messageDiv.remove();
-                    messageCache.delete(msgId);
-                }, 1000);
-            }, 29000);
+            localStream.getAudioTracks().forEach(t => t.enabled = false);
+        } catch(e) {
+            alert('请允许麦克风权限');
+            return;
         }
 
-        async function deleteMessage(recordId) {
-            try {
-                await fetch(`${POCKETBASE_URL}/api/collections/messages/records/${recordId}`, {
-                    method: 'DELETE'
-                });
-            } catch (error) {
-                console.log('删除失败:', error);
+        const chHash = await hashChannel(room);
+
+        sbChannel = sb.channel(chHash, { config: { broadcast: { self: false } } });
+
+        sbChannel.on('broadcast', { event: 'signal' }, ({ payload }) => {
+            if (payload.to === myId) handleSignal(payload.from, payload.signal);
+        });
+
+        sbChannel.on('broadcast', { event: 'join' }, ({ payload }) => {
+            if (payload.from !== myId) {
+                onlineUsers.set(payload.from, { name: payload.name, color: payload.color });
+                updateOnlineCount();
+                makeOffer(payload.from);
+                broadcast('here', { name: myName, color: myColor, to: payload.from });
             }
+        });
+
+        sbChannel.on('broadcast', { event: 'here' }, ({ payload }) => {
+            if ((payload.to === myId || !payload.to) && payload.from !== myId) {
+                onlineUsers.set(payload.from, { name: payload.name, color: payload.color });
+                updateOnlineCount();
+            }
+        });
+
+        sbChannel.on('broadcast', { event: 'leave' }, ({ payload }) => {
+            if (payload.from !== myId) {
+                onlineUsers.delete(payload.from);
+                if (peers.has(payload.from)) { peers.get(payload.from).close(); peers.delete(payload.from); }
+                updateOnlineCount();
+            }
+        });
+
+        sbChannel.subscribe((status) => {
+            if (status === 'SUBSCRIBED') {
+                broadcast('join', { name: myName, color: myColor });
+                document.getElementById('joinSection').classList.add('hidden');
+                document.getElementById('mainContent').classList.add('show');
+                updateOnlineCount();
+                startListening();
+            }
+        });
+    }
+
+    function leaveRoom() {
+        if (pollInterval) clearInterval(pollInterval);
+        if (isTalking) stopTalking();
+        broadcast('leave', {});
+        peers.forEach(pc => pc.close()); peers.clear();
+        onlineUsers.clear();
+        if (sbChannel) { sb.removeChannel(sbChannel); sbChannel = null; }
+        if (localStream) { localStream.getTracks().forEach(t => t.stop()); localStream = null; }
+        currentRoom = '';
+        document.getElementById('mainContent').classList.remove('show');
+        document.getElementById('joinSection').classList.remove('hidden');
+        document.getElementById('username').value = '';
+        document.getElementById('room').value = 'lobby';
+        document.getElementById('messageInput').value = '';
+        document.getElementById('chatMessages').innerHTML = '';
+        talkBtn.disabled = true;
+        updateOnlineCount();
+    }
+
+    function startTalking() {
+        if (isTalking || !localStream || talkBtn.disabled) return;
+        isTalking = true;
+        localStream.getAudioTracks().forEach(t => t.enabled = true);
+        talkBtn.classList.add('active');
+        talkBtn.querySelector('.label').textContent = '正在说话...';
+    }
+
+    function stopTalking() {
+        if (!isTalking) return;
+        isTalking = false;
+        localStream.getAudioTracks().forEach(t => t.enabled = false);
+        talkBtn.classList.remove('active');
+        talkBtn.querySelector('.label').textContent = '按住说话';
+    }
+
+    talkBtn.addEventListener('mousedown', e => { e.preventDefault(); startTalking(); });
+    talkBtn.addEventListener('mouseup', e => { e.preventDefault(); stopTalking(); });
+    talkBtn.addEventListener('mouseleave', () => { if (isTalking) stopTalking(); });
+    talkBtn.addEventListener('touchstart', e => { e.preventDefault(); startTalking(); }, { passive: false });
+    talkBtn.addEventListener('touchend', e => { e.preventDefault(); stopTalking(); }, { passive: false });
+    document.addEventListener('keydown', e => {
+        if (e.code === 'Space' && !e.repeat && document.activeElement.tagName !== 'INPUT') { e.preventDefault(); startTalking(); }
+    });
+    document.addEventListener('keyup', e => { if (e.code === 'Space') { e.preventDefault(); stopTalking(); } });
+
+    async function sendMessage() {
+        const input = document.getElementById('messageInput');
+        const content = input.value.trim();
+        if (!content) return;
+
+        const timestamp = Date.now();
+        displayMessage(myName, content, true, timestamp);
+        input.value = '';
+
+        try {
+            await fetch(`${POCKETBASE_URL}/api/collections/messages/records`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ room: currentRoom, user: myName, content, timestamp })
+            });
+        } catch (error) {
+            console.log('发送失败');
+        }
+    }
+
+    function displayMessage(user, content, isOwn = false, timestamp = null) {
+        const msgId = `${user}-${content}-${timestamp || Date.now()}`;
+        if (messageCache.has(msgId)) return;
+        messageCache.add(msgId);
+
+        const chatMessages = document.getElementById('chatMessages');
+        const messageDiv = document.createElement('div');
+        messageDiv.className = `message ${isOwn ? 'own' : 'other'}`;
+        const time = new Date(timestamp || Date.now()).toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' });
+        messageDiv.innerHTML = `<div class="message-user">${user} ${time}</div><div>${content}</div>`;
+        chatMessages.appendChild(messageDiv);
+        chatMessages.scrollTop = chatMessages.scrollHeight;
+    }
+
+    async function startListening() {
+        try {
+            const response = await fetch(`${POCKETBASE_URL}/api/collections/messages/records?filter=(room='${currentRoom}')&sort=-timestamp&limit=50`);
+            if (response.ok) {
+                const data = await response.json();
+                if (data.items) {
+                    data.items.reverse().forEach(record => {
+                        if (record.timestamp >= joinTime) {
+                            displayMessage(record.user, record.content, record.user === myName, record.timestamp);
+                        }
+                    });
+                }
+            }
+        } catch (error) {
+            console.log('加载消息失败');
         }
 
-        async function startListening() {
+        pollInterval = setInterval(async () => {
             try {
-                const response = await fetch(
-                    `${POCKETBASE_URL}/api/collections/messages/records?filter=(room='${currentRoom}')&sort=-timestamp&limit=50`
-                );
-                
+                const response = await fetch(`${POCKETBASE_URL}/api/collections/messages/records?filter=(room='${currentRoom}')&sort=-timestamp&limit=10`);
                 if (response.ok) {
                     const data = await response.json();
-                    if (data.items && data.items.length > 0) {
+                    if (data.items) {
                         data.items.reverse().forEach(record => {
                             if (record.timestamp >= joinTime) {
                                 displayMessage(record.user, record.content, record.user === myName, record.timestamp);
@@ -682,81 +624,21 @@
                     }
                 }
             } catch (error) {
-                console.log('加载消息失败:', error);
+                console.log('轮询失败');
             }
+        }, 2000);
+    }
 
-            pollInterval = setInterval(async () => {
-                try {
-                    const response = await fetch(
-                        `${POCKETBASE_URL}/api/collections/messages/records?filter=(room='${currentRoom}')&sort=-timestamp&limit=10`
-                    );
-                    
-                    if (response.ok) {
-                        const data = await response.json();
-                        if (data.items && data.items.length > 0) {
-                            data.items.reverse().forEach(record => {
-                                if (record.timestamp >= joinTime) {
-                                    displayMessage(record.user, record.content, record.user === myName, record.timestamp);
-                                }
-                            });
-                        }
-                    }
-                } catch (error) {
-                    console.log('轮询失败:', error);
-                }
-            }, 2000);
-        }
+    function handleKeyPress(event) {
+        if (event.key === 'Enter') sendMessage();
+    }
 
-        function updateOnlineCount() {
-            const count = onlineUsers.size + 1;
-            document.getElementById('onlineCount').textContent = count;
-            document.getElementById('chatOnlineCount').textContent = count;
-        }
+    window.addEventListener('beforeunload', () => {
+        if (pollInterval) clearInterval(pollInterval);
+        if (currentRoom) leaveRoom();
+    });
 
-        function startPTT() {
-            if (!localStream) return;
-            isTalking = true;
-            localStream.getAudioTracks().forEach(t => t.enabled = true);
-            document.getElementById('pttBtn').style.background = 'linear-gradient(135deg, #cc0000, #ff0000)';
-            document.getElementById('screen').textContent = '🎤 说话中...';
-        }
-
-        function stopPTT() {
-            if (!localStream) return;
-            isTalking = false;
-            localStream.getAudioTracks().forEach(t => t.enabled = false);
-            document.getElementById('pttBtn').style.background = 'linear-gradient(135deg, #ff6b6b, #ff8787)';
-            document.getElementById('screen').textContent = '就绪';
-        }
-
-        function handleKeyPress(event) {
-            if (event.key === 'Enter') sendMessage();
-        }
-
-        function leaveRoom() {
-            if (pollInterval) clearInterval(pollInterval);
-            if (userPollInterval) clearInterval(userPollInterval);
-            if (isTalking) stopPTT();
-            peers.forEach(pc => pc.close()); 
-            peers.clear();
-            onlineUsers.clear();
-            if (localStream) { localStream.getTracks().forEach(t => t.stop()); localStream = null; }
-            currentRoom = null;
-
-            document.getElementById('mainContent').classList.remove('show');
-            document.getElementById('joinSection').classList.remove('hidden');
-            document.getElementById('username').value = '';
-            document.getElementById('room').value = 'lobby';
-            document.getElementById('messageInput').value = '';
-            document.getElementById('chatMessages').innerHTML = '';
-            updateOnlineCount();
-        }
-
-        window.addEventListener('beforeunload', () => {
-            if (pollInterval) clearInterval(pollInterval);
-            if (userPollInterval) clearInterval(userPollInterval);
-            if (currentRoom) leaveRoom();
-        });
-    </script>
+    document.getElementById('room').addEventListener('keydown', e => { if (e.key === 'Enter') joinRoom(); });
+</script>
 </body>
 </html>
