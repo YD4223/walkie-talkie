@@ -261,33 +261,49 @@
                 flex: 0 0 auto;
                 border-right: none;
                 border-bottom: 1px solid rgba(255,255,255,0.1);
-                padding: 15px;
-                gap: 15px;
+                padding: 12px;
+                gap: 12px;
             }
             .wave-container {
-                width: 150px;
-                height: 150px;
+                width: 120px;
+                height: 120px;
             }
-            .wave-ring:nth-child(1) { width: 120px; height: 120px; }
-            .wave-ring:nth-child(2) { width: 135px; height: 135px; }
-            .wave-ring:nth-child(3) { width: 150px; height: 150px; }
+            .wave-ring:nth-child(1) { width: 90px; height: 90px; }
+            .wave-ring:nth-child(2) { width: 105px; height: 105px; }
+            .wave-ring:nth-child(3) { width: 120px; height: 120px; }
             .talk-btn {
-                width: 110px;
-                height: 110px;
+                width: 90px;
+                height: 90px;
             }
-            .talk-btn .icon { font-size: 2.5rem; }
-            .talk-btn .label { font-size: 0.7rem; }
-            .ptt-info { margin-top: 10px; font-size: 0.8rem; }
-            .chat-section { flex: 1; min-height: 200px; }
-            .chat-header { padding: 10px 12px; }
-            .chat-header h2 { font-size: 0.9rem; }
-            .chat-messages { padding: 12px; }
+            .talk-btn .icon { font-size: 2rem; }
+            .talk-btn .label { font-size: 0.65rem; }
+            .ptt-info { margin-top: 8px; font-size: 0.75rem; }
+            .chat-section { 
+                flex: 1; 
+                min-height: 250px;
+                display: flex;
+                flex-direction: column;
+            }
+            .chat-section > * {
+                flex-shrink: 0;
+            }
+            .chat-header { padding: 8px 10px; }
+            .chat-header h2 { font-size: 0.85rem; }
+            .chat-messages { 
+                flex: 1;
+                padding: 10px;
+                min-height: 120px;
+            }
             .message { max-width: 85%; font-size: 0.85rem; }
-            .chat-input-area { padding: 10px; gap: 6px; }
+            .chat-input-area { 
+                padding: 10px; 
+                gap: 6px;
+                display: flex !important;
+            }
             .chat-input-area input { padding: 8px 12px; font-size: 0.85rem; }
             .chat-input-area button { padding: 8px 12px; font-size: 0.8rem; }
-            .online-count { padding: 3px 8px; font-size: 0.75rem; }
-            .btn-leave { padding: 4px 10px; font-size: 0.75rem; }
+            .online-count { padding: 3px 8px; font-size: 0.7rem; }
+            .btn-leave { padding: 4px 8px; font-size: 0.7rem; }
         }
 
         @keyframes slideIn {
