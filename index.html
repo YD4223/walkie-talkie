@@ -592,15 +592,22 @@
         input.value = '';
 
         try {
-            await sb.from('messages').insert({
+            const { data, error } = await sb.from('messages').insert({
                 room: currentRoom,
                 user: myName,
                 content: content,
                 timestamp: timestamp,
                 expire_at: new Date(timestamp + 30000).toISOString()
             });
+            if (error) {
+                console.log('发送失败:', error.message);
+                alert('发送失败: ' + error.message);
+            } else {
+                console.log('发送成功:', data);
+            }
         } catch (error) {
-            console.log('发送失败');
+            console.log('发送失败:', error);
+            alert('发送失败: ' + error);
         }
     }
 
