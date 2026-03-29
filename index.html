@@ -380,7 +380,7 @@
 <script>
     const SUPABASE_URL = 'https://hogtlfhzaptjmdofirpc.supabase.co';
     const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhvZ3RsZmh6YXB0am1kb2ZpcnBjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQ0Mzk0MDgsImV4cCI6MjA5MDAxNTQwOH0.uWntVROe6VLzr6Uoqz57HoQ48NgmqJFy-UgE0sZ1ezI';
-    const POCKETBASE_URL = 'http://127.0.0.1:8090';
+    // 使用 Supabase 存储聊天记录，不再需要 PocketBase
 
     const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
@@ -533,6 +533,20 @@
                 document.getElementById('mainContent').classList.add('show');
                 updateOnlineCount();
                 startListening();
+                
+                // 监听聊天消息
+                sb.channel('chat_' + currentRoom)
+                    .on('postgres_changes', { 
+                        event: 'INSERT', 
+                        schema: 'public', 
+                        table: 'messages',
+                        filter: `room=eq.${currentRoom}`
+                    }, (payload) => {
+                        if (payload.new && payload.new.user !== myName) {
+                            displayMessage(payload.new.user, payload.new.content, false, payload.new.timestamp);
+                        }
+                    })
+                    .subscribe();
             }
         });
     }
@@ -592,10 +606,12 @@
         input.value = '';
 
         try {
-            await fetch(`${POCKETBASE_URL}/api/collections/messages/records`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ room: currentRoom, user: myName, content, timestamp })
+            await sb.from('messages').insert({
+                room: currentRoom,
+                user: myName,
+                content: content,
+                timestamp: timestamp,
+                expire_at: new Date(timestamp + 30000).toISOString()
             });
         } catch (error) {
             console.log('发送失败');
@@ -618,33 +634,38 @@
 
     async function startListening() {
         try {
-            const response = await fetch(`${POCKETBASE_URL}/api/collections/messages/records?filter=(room='${currentRoom}')&sort=-timestamp&limit=50`);
-            if (response.ok) {
-                const data = await response.json();
-                if (data.items) {
-                    data.items.reverse().forEach(record => {
-                        if (record.timestamp >= joinTime) {
-                            displayMessage(record.user, record.content, record.user === myName, record.timestamp);
-                        }
-                    });
-                }
+            const { data, error } = await sb.from('messages')
+                .select('*')
+                .eq('room', currentRoom)
+                .order('timestamp', { ascending: false })
+                .limit(50);
+            
+            if (!error && data) {
+                data.reverse().forEach(record => {
+                    if (record.timestamp >= joinTime) {
+                        displayMessage(record.user, record.content, record.user === myName, record.timestamp);
+                    }
+                });
             }
         } catch (error) {
             console.log('加载消息失败');
         }
 
+        // 轮询新消息
         pollInterval = setInterval(async () => {
             try {
-                const response = await fetch(`${POCKETBASE_URL}/api/collections/messages/records?filter=(room='${currentRoom}')&sort=-timestamp&limit=10`);
-                if (response.ok) {
-                    const data = await response.json();
-                    if (data.items) {
-                        data.items.reverse().forEach(record => {
-                            if (record.timestamp >= joinTime) {
-                                displayMessage(record.user, record.content, record.user === myName, record.timestamp);
-                            }
-                        });
-                    }
+                const { data, error } = await sb.from('messages')
+                    .select('*')
+                    .eq('room', currentRoom)
+                    .order('timestamp', { ascending: false })
+                    .limit(10);
+                
+                if (!error && data) {
+                    data.reverse().forEach(record => {
+                        if (record.timestamp >= joinTime) {
+                            displayMessage(record.user, record.content, record.user === myName, record.timestamp);
+                        }
+                    });
                 }
             } catch (error) {
                 console.log('轮询失败');
