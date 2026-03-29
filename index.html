@@ -533,20 +533,6 @@
                 document.getElementById('mainContent').classList.add('show');
                 updateOnlineCount();
                 startListening();
-                
-                // 监听聊天消息
-                sb.channel('chat_' + currentRoom)
-                    .on('postgres_changes', { 
-                        event: 'INSERT', 
-                        schema: 'public', 
-                        table: 'messages',
-                        filter: `room=eq.${currentRoom}`
-                    }, (payload) => {
-                        if (payload.new && payload.new.user !== myName) {
-                            displayMessage(payload.new.user, payload.new.content, false, payload.new.timestamp);
-                        }
-                    })
-                    .subscribe();
             }
         });
     }
@@ -637,18 +623,18 @@
             const { data, error } = await sb.from('messages')
                 .select('*')
                 .eq('room', currentRoom)
-                .order('timestamp', { ascending: false })
+                .order('timestamp', { ascending: true })
                 .limit(50);
             
             if (!error && data) {
-                data.reverse().forEach(record => {
+                data.forEach(record => {
                     if (record.timestamp >= joinTime) {
                         displayMessage(record.user, record.content, record.user === myName, record.timestamp);
                     }
                 });
             }
         } catch (error) {
-            console.log('加载消息失败');
+            console.log('加载消息失败:', error);
         }
 
         // 轮询新消息
@@ -657,18 +643,18 @@
                 const { data, error } = await sb.from('messages')
                     .select('*')
                     .eq('room', currentRoom)
-                    .order('timestamp', { ascending: false })
-                    .limit(10);
+                    .order('timestamp', { ascending: true })
+                    .limit(20);
                 
                 if (!error && data) {
-                    data.reverse().forEach(record => {
+                    data.forEach(record => {
                         if (record.timestamp >= joinTime) {
                             displayMessage(record.user, record.content, record.user === myName, record.timestamp);
                         }
                     });
                 }
             } catch (error) {
-                console.log('轮询失败');
+                console.log('轮询失败:', error);
             }
         }, 2000);
     }
