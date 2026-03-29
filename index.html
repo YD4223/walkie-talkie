@@ -358,7 +358,7 @@
         </div>
     </div>
 
-    <div class="chat-section">
+    <div class="chat-section" style="display:flex !important; flex-direction:column !important; flex:1 !important; min-height:0 !important;">
         <div class="chat-header">
             <h2>💬 文字聊天</h2>
             <div class="header-right">
@@ -367,9 +367,9 @@
             </div>
         </div>
         <div class="chat-messages" id="chatMessages"></div>
-        <div class="chat-input-area">
-            <input type="text" id="messageInput" placeholder="输入消息..." onkeypress="handleKeyPress(event)">
-            <button onclick="sendMessage()">发送</button>
+        <div class="chat-input-area" style="display:flex !important; padding:12px; gap:8px; border-top:1px solid rgba(255,255,255,0.1); background:rgba(0,0,0,0.3);">
+            <input type="text" id="messageInput" placeholder="输入消息..." onkeypress="handleKeyPress(event)" style="flex:1; padding:10px 14px; border:1px solid rgba(255,255,255,0.1); border-radius:20px; background:rgba(255,255,255,0.06); color:#fff; font-size:0.9rem; outline:none;">
+            <button onclick="sendMessage()" style="padding:10px 16px; background:linear-gradient(135deg, #00d4ff, #7c3aed); color:white; border:none; border-radius:20px; cursor:pointer; font-weight:600; font-size:0.85rem;">发送</button>
         </div>
     </div>
 </div>
