@@ -376,13 +376,68 @@
 
 </div>
 
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.39.0/dist/umd/supabase.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm" type="module"></script>
 <script>
     const SUPABASE_URL = 'https://hogtlfhzaptjmdofirpc.supabase.co';
     const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhvZ3RsZmh6YXB0am1kb2ZpcnBjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQ0Mzk0MDgsImV4cCI6MjA5MDAxNTQwOH0.uWntVROe6VLzr6Uoqz57HoQ48NgmqJFy-UgE0sZ1ezI';
     // 使用 Supabase 存储聊天记录，不再需要 PocketBase
 
     const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+    // 端对端加密
+    let encryptionKey = null;
+
+    async function deriveKey(password) {
+        const enc = new TextEncoder();
+        const keyMaterial = await crypto.subtle.importKey(
+            'raw',
+            enc.encode(password),
+            'PBKDF2',
+            false,
+            ['deriveBits', 'deriveKey']
+        );
+        return crypto.subtle.deriveKey(
+            {
+                name: 'PBKDF2',
+                salt: enc.encode('zero-distance-v1'),
+                iterations: 100000,
+                hash: 'SHA-256'
+            },
+            keyMaterial,
+            { name: 'AES-GCM', length: 256 },
+            false,
+            ['encrypt', 'decrypt']
+        );
+    }
+
+    async function encrypt(text, key) {
+        const enc = new TextEncoder();
+        const iv = crypto.getRandomValues(new Uint8Array(12));
+        const encrypted = await crypto.subtle.encrypt(
+            { name: 'AES-GCM', iv },
+            key,
+            enc.encode(text)
+        );
+        return {
+            iv: Array.from(iv),
+            data: Array.from(new Uint8Array(encrypted))
+        };
+    }
+
+    async function decrypt(encryptedData, key) {
+        try {
+            const iv = new Uint8Array(encryptedData.iv);
+            const data = new Uint8Array(encryptedData.data);
+            const decrypted = await crypto.subtle.decrypt(
+                { name: 'AES-GCM', iv },
+                key,
+                data
+            );
+            return new TextDecoder().decode(decrypted);
+        } catch (e) {
+            return null;
+        }
+    }
 
     let myId = 'u_' + Math.random().toString(36).substr(2, 8);
     let myColor = '#' + Math.floor(Math.random()*0xffffff).toString(16).padStart(6,'0');
@@ -482,6 +537,9 @@
         myName = username;
         currentRoom = room;
         joinTime = Date.now();
+        
+        // 从房间号派生加密密钥
+        encryptionKey = await deriveKey(room);
 
         try {
             localStream = await navigator.mediaDevices.getUserMedia({
@@ -588,6 +646,10 @@
         if (!content) return;
 
         const timestamp = Date.now();
+        
+        // 加密消息内容
+        const encrypted = await encrypt(content, encryptionKey);
+        
         displayMessage(myName, content, true, timestamp);
         input.value = '';
 
@@ -595,7 +657,7 @@
             const { data, error } = await sb.from('messages').insert({
                 room: currentRoom,
                 user: myName,
-                content: content,
+                content: JSON.stringify(encrypted), // 存储加密后的内容
                 timestamp: timestamp,
                 expire_at: new Date(timestamp + 30000).toISOString()
             });
@@ -634,11 +696,20 @@
                 .limit(50);
             
             if (!error && data) {
-                data.forEach(record => {
+                for (const record of data) {
                     if (record.timestamp >= joinTime) {
-                        displayMessage(record.user, record.content, record.user === myName, record.timestamp);
+                        // 解密消息
+                        try {
+                            const encrypted = JSON.parse(record.content);
+                            const decrypted = await decrypt(encrypted, encryptionKey);
+                            if (decrypted) {
+                                displayMessage(record.user, decrypted, record.user === myName, record.timestamp);
+                            }
+                        } catch (e) {
+                            // 无法解密就跳过
+                        }
                     }
-                });
+                }
             }
         } catch (error) {
             console.log('加载消息失败:', error);
@@ -654,11 +725,20 @@
                     .limit(20);
                 
                 if (!error && data) {
-                    data.forEach(record => {
+                    for (const record of data) {
                         if (record.timestamp >= joinTime) {
-                            displayMessage(record.user, record.content, record.user === myName, record.timestamp);
+                            // 解密消息
+                            try {
+                                const encrypted = JSON.parse(record.content);
+                                const decrypted = await decrypt(encrypted, encryptionKey);
+                                if (decrypted) {
+                                    displayMessage(record.user, decrypted, record.user === myName, record.timestamp);
+                                }
+                            } catch (e) {
+                                // 无法解密就跳过
+                            }
                         }
-                    });
+                    }
                 }
             } catch (error) {
                 console.log('轮询失败:', error);
