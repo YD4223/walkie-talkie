@@ -37,6 +37,7 @@
             background: rgba(0,0,0,0.5);
             border-bottom: 1px solid rgba(255,255,255,0.08);
             backdrop-filter: blur(20px);
+            flex-shrink: 0;
         }
         header h1 {
             font-size: 1.5rem;
@@ -85,27 +86,26 @@
         .main-content {
             flex: 1;
             display: none;
-            gap: 0;
-            padding: 0;
+            flex-direction: row;
             overflow: hidden;
         }
         .main-content.show { display: flex; }
 
-        .ptt-panel {
-            flex: 0 0 280px;
+        .ptt-section {
+            flex: 0 0 300px;
             background: rgba(0,0,0,0.4);
             border-right: 1px solid rgba(255,255,255,0.1);
-            padding: 24px;
+            padding: 20px;
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            gap: 24px;
         }
 
         .wave-container {
             position: relative; width: 200px; height: 200px;
             display: flex; align-items: center; justify-content: center;
+            margin-bottom: 20px;
         }
         .wave-ring {
             position: absolute; border-radius: 50%;
@@ -143,31 +143,22 @@
 
         .ptt-info {
             text-align: center;
-            font-size: 0.9rem;
+            margin-top: 20px;
+            font-size: 0.85rem;
             color: #888;
         }
 
-        .btn-leave {
-            background: rgba(255,100,100,0.15);
-            color: #ff6b6b;
-            border: 1px solid rgba(255,100,100,0.25);
-            padding: 8px 16px;
-            border-radius: 8px;
-            font-size: 0.85rem;
-            cursor: pointer;
-        }
-
-        .chat-panel {
+        .chat-section {
             flex: 1;
-            background: rgba(0,0,0,0.4);
             display: flex;
             flex-direction: column;
-            overflow: hidden;
+            background: rgba(0,0,0,0.3);
             min-width: 0;
         }
 
         .chat-header {
             padding: 12px 15px;
+            background: rgba(0,0,0,0.3);
             border-bottom: 1px solid rgba(255,255,255,0.1);
             display: flex;
             justify-content: space-between;
@@ -175,12 +166,22 @@
             flex-shrink: 0;
         }
         .chat-header h2 { font-size: 0.95rem; font-weight: 600; }
+        .header-right { display: flex; gap: 8px; align-items: center; }
         .online-count {
             background: rgba(0,212,255,0.15);
             padding: 4px 10px;
             border-radius: 12px;
             font-size: 0.8rem;
             color: #00d4ff;
+        }
+        .btn-leave {
+            background: rgba(255,100,100,0.15);
+            color: #ff6b6b;
+            border: 1px solid rgba(255,100,100,0.25);
+            padding: 5px 12px;
+            border-radius: 6px;
+            font-size: 0.8rem;
+            cursor: pointer;
         }
 
         .chat-messages {
@@ -190,7 +191,10 @@
             display: flex;
             flex-direction: column;
             gap: 10px;
-            min-height: 0;
+            min-height: 150px;
+            max-height: 60vh;
+            overflow-y: auto;
+            -webkit-overflow-scrolling: touch;
         }
 
         .message {
@@ -199,11 +203,6 @@
             max-width: 75%;
             word-wrap: break-word;
             font-size: 0.9rem;
-            animation: slideIn 0.3s ease;
-        }
-        @keyframes slideIn {
-            from { opacity: 0; transform: translateY(10px); }
-            to { opacity: 1; transform: translateY(0); }
         }
         .message.own {
             align-self: flex-end;
@@ -218,7 +217,7 @@
         .message-user {
             font-size: 0.75rem;
             opacity: 0.7;
-            margin-bottom: 2px;
+            margin-bottom: 3px;
         }
 
         .chat-input-area {
@@ -227,6 +226,9 @@
             display: flex;
             gap: 8px;
             flex-shrink: 0;
+            background: rgba(0,0,0,0.3);
+            position: sticky;
+            bottom: 0;
         }
         .chat-input-area input {
             flex: 1;
@@ -255,11 +257,11 @@
             .main-content.show {
                 flex-direction: column;
             }
-            .ptt-panel {
+            .ptt-section {
                 flex: 0 0 auto;
                 border-right: none;
                 border-bottom: 1px solid rgba(255,255,255,0.1);
-                padding: 20px;
+                padding: 15px;
                 gap: 15px;
             }
             .wave-container {
@@ -274,18 +276,25 @@
                 height: 110px;
             }
             .talk-btn .icon { font-size: 2.5rem; }
-            .talk-btn .label { font-size: 0.75rem; }
-            .chat-panel {
-                flex: 1;
-                min-height: 200px;
-            }
-            .message { max-width: 85%; font-size: 0.85rem; }
-            .chat-messages { padding: 12px; }
+            .talk-btn .label { font-size: 0.7rem; }
+            .ptt-info { margin-top: 10px; font-size: 0.8rem; }
+            .chat-section { flex: 1; min-height: 200px; }
             .chat-header { padding: 10px 12px; }
-            .chat-input-area { padding: 10px; }
+            .chat-header h2 { font-size: 0.9rem; }
+            .chat-messages { padding: 12px; }
+            .message { max-width: 85%; font-size: 0.85rem; }
+            .chat-input-area { padding: 10px; gap: 6px; }
             .chat-input-area input { padding: 8px 12px; font-size: 0.85rem; }
             .chat-input-area button { padding: 8px 12px; font-size: 0.8rem; }
+            .online-count { padding: 3px 8px; font-size: 0.75rem; }
+            .btn-leave { padding: 4px 10px; font-size: 0.75rem; }
         }
+
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .message { animation: slideIn 0.3s ease; }
     </style>
 </head>
 <body>
@@ -317,7 +326,7 @@
 </div>
 
 <div class="main-content" id="mainContent">
-    <div class="ptt-panel">
+    <div class="ptt-section">
         <div class="wave-container">
             <div class="wave-ring"></div>
             <div class="wave-ring"></div>
@@ -331,13 +340,15 @@
             <div>在线: <span id="onlineCount">1</span> 人</div>
             <div style="font-size:0.75rem;margin-top:5px;color:#4ade80">端对端加密</div>
         </div>
-        <button class="btn-leave" onclick="leaveRoom()">离开房间</button>
     </div>
 
-    <div class="chat-panel">
+    <div class="chat-section">
         <div class="chat-header">
             <h2>💬 文字聊天</h2>
-            <div class="online-count">在线 <span id="chatOnlineCount">1</span> 人</div>
+            <div class="header-right">
+                <div class="online-count">在线 <span id="chatOnlineCount">1</span> 人</div>
+                <button class="btn-leave" onclick="leaveRoom()">离开</button>
+            </div>
         </div>
         <div class="chat-messages" id="chatMessages"></div>
         <div class="chat-input-area">
@@ -506,8 +517,6 @@
                 document.getElementById('mainContent').classList.add('show');
                 updateOnlineCount();
                 startListening();
-            } else if (status === 'CHANNEL_ERROR' || status === 'TIMED_OUT') {
-                alert('连接失败，请检查网络');
             }
         });
     }
